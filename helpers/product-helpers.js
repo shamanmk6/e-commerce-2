@@ -83,17 +83,85 @@ module.exports = {
         quantity: product.quantity,
         description: product.description,
         images: product.images || [], // Assuming 'images' is an array field
+        isDeleted: product.isDeleted,
       }));
       resolve(products);
     });
   },
+  //   deleteProduct: (proId) => {
+  //     return new Promise((resolve, reject) => {
+  //         console.log("Deleting product with _id:", proId);
+  //         const productId = new objectId(proId);
+
+  //         db.getDatabase()
+  //             .collection(collection.PRODUCT_COLLECTION)
+  //             .findOneAndUpdate(
+  //                 { _id: productId, isDeleted: false },
+  //                 { $set: { isDeleted: true } },
+  //                 { returnDocument: 'after' } // Returns the updated document
+  //             )
+  //             .then((result) => {
+  //                 if (result && result.value) {
+  //                     console.log("Product deleted:", result.value);
+  //                     resolve(result.value);
+  //                 } else {
+  //                     console.log("Product not found or already deleted");
+  //                     resolve(null);
+  //                 }
+  //             })
+  //             .catch((error) => {
+  //                 console.error("Error during product deletion:", error);
+  //                 reject(error);
+  //             });
+  //     });
+  // },
   deleteProduct: (proId) => {
     return new Promise((resolve, reject) => {
       console.log(proId);
       console.log(new objectId(proId));
       db.getDatabase()
         .collection(collection.PRODUCT_COLLECTION)
-        .deleteOne({ _id: new objectId(proId) })
+        .updateOne({ _id: new objectId(proId) }, { $set: { isDeleted: true } })
+        .then((response) => {
+          console.log(response);
+          resolve(response);
+        });
+    });
+  },
+  // restoreProduct: (proId) => {
+  //   return new Promise((resolve, reject) => {
+  //       console.log("Deleting product with _id:", proId);
+  //       const productId = new objectId(proId);
+
+  //       db.getDatabase()
+  //           .collection(collection.PRODUCT_COLLECTION)
+  //           .findOneAndUpdate(
+  //               { _id: productId, isDeleted: true },
+  //               { $set: { isDeleted: false } },
+  //               { returnDocument: 'after' } // Returns the updated document
+  //           )
+  //           .then((result) => {
+  //               if (result && result.value) {
+  //                   console.log("Product restores:", result.value);
+  //                   resolve(result.value);
+  //               } else {
+  //                   console.log("Product not found or already restored");
+  //                   resolve(null);
+  //               }
+  //           })
+  //           .catch((error) => {
+  //               console.error("Error during product deletion:", error);
+  //               reject(error);
+  //           });
+  //   });
+  // },
+  restoreProduct: (proId) => {
+    return new Promise((resolve, reject) => {
+      console.log(proId);
+      console.log(new objectId(proId));
+      db.getDatabase()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateOne({ _id: new objectId(proId) }, { $set: { isDeleted: false } })
         .then((response) => {
           console.log(response);
           resolve(response);
@@ -120,33 +188,34 @@ module.exports = {
   },
   updateProduct: (proId, proDetails, images) => {
     return new Promise(async (resolve, reject) => {
-        try {
-            const response = await db.getDatabase()
-                .collection(collection.PRODUCT_COLLECTION)
-                .updateOne(
-                    { _id: new objectId(proId) },
-                    {
-                        $set: {
-                            name: proDetails.name,
-                            description: proDetails.description,
-                            price: proDetails.price,
-                            category: proDetails.category,
-                            quantity: proDetails.quantity,
-                            images: images, // Assuming 'images' is an array
-                        },
-                    }
-                );
-
-            if (response.modifiedCount > 0) {
-                resolve();
-            } else {
-                reject(new Error("No document was updated."));
+      try {
+        const response = await db
+          .getDatabase()
+          .collection(collection.PRODUCT_COLLECTION)
+          .updateOne(
+            { _id: new objectId(proId) },
+            {
+              $set: {
+                name: proDetails.name,
+                description: proDetails.description,
+                price: proDetails.price,
+                category: proDetails.category,
+                quantity: proDetails.quantity,
+                images: images, // Assuming 'images' is an array
+              },
             }
-        } catch (error) {
-            reject(error);
+          );
+
+        if (response.modifiedCount > 0) {
+          resolve();
+        } else {
+          reject(new Error("No document was updated."));
         }
+      } catch (error) {
+        reject(error);
+      }
     });
-},
+  },
   getAllOrders: () => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -205,7 +274,7 @@ module.exports = {
           .getDatabase()
           .collection(collection.ADMIN_COLLECTION)
           .findOne({ email: email }); // Use the email parameter
-  
+
         if (admin && password === admin.password) {
           console.log("Login-success");
           response.admin = admin;
@@ -220,5 +289,5 @@ module.exports = {
         resolve({ status: false, message: "An error occurred during login" });
       }
     });
-  }
+  },
 };

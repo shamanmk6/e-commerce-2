@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { response } = require("../app");
-const verifyLogin=require ("../middlewares/verifyLogin.js")
+const verifyLogin = require("../middlewares/verifyLogin.js");
 const {
   loginUser,
   signupUser,
@@ -29,13 +29,11 @@ const {
   verifyOTPForgot,
   resendOTP,
   resendOTPForgot,
-
-
 } = require("../controllers/userController.js");
-const{
-  productDetails ,
-  viewProducts
-}=require("../controllers/productController.js")
+const {
+  productDetails,
+  viewProducts,
+} = require("../controllers/productController.js");
 // const { verifyEmail } = require('../helpers/user-helpers');
 
 // const checkLogin = (req, res, next) => {
@@ -53,49 +51,51 @@ router.get("/", viewProducts);
 
 router.route("/login").get(loginUser).post(validateLogin);
 
-
 router.route("/signup").get(signupUser).post(registerUser);
 
 router.get("/logout", logOut);
 router.get("/verify", verifyEmail);
 
-
 router.get("/details/:id", productDetails);
 
 router.get("/forgot-password", forgotPassword);
 
-router.post("/forgot-password",resetPassword)
+router.post("/forgot-password", resetPassword);
 
 router.get("/resetPassword", changePassword);
-router.post("/admin/resetPassword", addNewPassword); 
+router.post("/admin/resetPassword", addNewPassword);
 
-router.get("/cart",verifyLogin,getCart);
+router.get("/cart", verifyLogin, getCart);
 
-router.get("/add-to-cart/:id",addToCart)
+router.get("/add-to-cart/:id", addToCart);
 
-router.post("/change-product-quantity",changeProductQuantity)
+router.post("/change-product-quantity", changeProductQuantity);
 
-router.get("/place-order",verifyLogin,placeOrder)
+router.get("/place-order", verifyLogin, placeOrder);
 
-router.post("/place-order",checkout)
+router.post("/place-order", checkout);
 
-router.get("/order-success",verifyLogin,orderSuccess)
+router.get("/order-success", verifyLogin, orderSuccess);
 
-router.get("/view-ordered-products/:id",getOrderedProducts)
+router.get("/view-ordered-products/:id", getOrderedProducts);
 
-router.get("/profile",verifyLogin,getProfile)
+router.get("/profile", verifyLogin, getProfile);
 
-router.get("/edit-profile/:id",editProfile)
+router.get("/edit-profile/:id", editProfile);
 
-router.post("/edit-profile/:id",changeProfile)
+router.post("/edit-profile/:id", changeProfile);
 
-router.get("/enter-otp",enterOTP);
-router.get("/enter-otp-forgot",enterOTPForgot);
+router.get("/enter-otp", enterOTP);
+router.get("/enter-otp-forgot", enterOTPForgot);
 
-router.post("/verify-otp",verifyOTP);
-router.post("/verify-otp-forgot",verifyOTPForgot);
+router.post("/verify-otp", verifyOTP);
+router.post("/verify-otp-forgot", verifyOTPForgot);
 
-router.get('/resend-otp', async (req, res) => resendOTP(req, res, '/enter-otp'));
-router.get('/resend-otp-forgot', async (req, res) => resendOTP(req, res, '/enter-otp-forgot'));
+router.get("/resend-otp", async (req, res) =>
+  resendOTP(req, res, "/enter-otp")
+);
+router.get("/resend-otp-forgot", async (req, res) =>
+  resendOTP(req, res, "/enter-otp-forgot")
+);
 
 module.exports = router;

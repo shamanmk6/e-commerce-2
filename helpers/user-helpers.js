@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const objectId = require("mongodb").ObjectId;
 const User = require("../model/userModel");
 const Category = require("../model/categoryModel");
-const UserOTPVerification=require("../model/userOTPVerificationModel")
+const UserOTPVerification = require("../model/userOTPVerificationModel");
 const nodeMailer = require("nodemailer");
 const { response } = require("../app");
 const { ObjectId } = require("mongodb");
@@ -605,59 +605,69 @@ module.exports = {
       resolve(response);
     });
   },
-  otpStore:(userId,otp)=>{ 
-    return new Promise(async (resolve,reject)=>{
-        const newotp=new UserOTPVerification({
+  otpStore: (userId, otp) => {
+    return new Promise(async (resolve, reject) => {
+      const newotp = new UserOTPVerification({
         userId: userId,
-        otp:otp,
+        otp: otp,
         createdAt: Date.now(),
-        expiresAt:Date.now()+3600000
-    }) 
-    await db.getDatabase().collection(collection.OTP_CollECTION).insertOne(newotp).then((response)=>{
-        resolve()
-    })
-
-    })
-
+        expiresAt: Date.now() + 3600000,
+      });
+      await db
+        .getDatabase()
+        .collection(collection.OTP_CollECTION)
+        .insertOne(newotp)
+        .then((response) => {
+          resolve();
+        });
+    });
   },
   otpVerify: (otp, userId) => {
     return new Promise(async (resolve, reject) => {
       try {
         // Log the input parameters for debugging
-        console.log('userId:', userId);
-        console.log('otp:', otp);
-  
+        console.log("userId:", userId);
+        console.log("otp:", otp);
+
         // Attempt to find the user in the database
-        let user = await db.getDatabase().collection(collection.OTP_CollECTION).findOne({ userId:userId });
-  
+        let user = await db
+          .getDatabase()
+          .collection(collection.OTP_CollECTION)
+          .findOne({ userId: userId });
+
         // Log the user for debugging
-        console.log('User from the database:', user);
-  
+        console.log("User from the database:", user);
+
         if (user) {
           const status = await bcrypt.compare(otp, user.otp);
           if (status) {
-            console.log('OTP is correct');
-            await db.getDatabase().collection(collection.USER_COLLECTION).updateOne(
-              { _id: new ObjectId(userId) },
-              { $set: { isVerified: true } }
-            );
-            await db.getDatabase().collection(collection.OTP_CollECTION).deleteOne({ userId: userId });
-            console.log('OTP record deleted from the database');
-            console.log('isVerified field updated to true');
-            resolve({ status: true, message: 'Verification successful' });
+            console.log("OTP is correct");
+            await db
+              .getDatabase()
+              .collection(collection.USER_COLLECTION)
+              .updateOne(
+                { _id: new ObjectId(userId) },
+                { $set: { isVerified: true } }
+              );
+            await db
+              .getDatabase()
+              .collection(collection.OTP_CollECTION)
+              .deleteOne({ userId: userId });
+            console.log("OTP record deleted from the database");
+            console.log("isVerified field updated to true");
+            resolve({ status: true, message: "Verification successful" });
           } else {
-            console.log('Incorrect OTP');
-            resolve({status:false,message:'Incorrect OTP'});
+            console.log("Incorrect OTP");
+            resolve({ status: false, message: "Incorrect OTP" });
           }
         } else {
-          console.log('User not found');
+          console.log("User not found");
           resolve(false);
         }
       } catch (error) {
-        console.error('Error in otpVerify:', error);
+        console.error("Error in otpVerify:", error);
         reject(error);
       }
     });
-  }
-  
+  },
 };

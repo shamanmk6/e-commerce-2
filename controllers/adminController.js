@@ -2,9 +2,9 @@ const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
 
 const getUsers = (req, res, next) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   userHelpers.getAllUsers().then((users) => {
-    res.render("admin/view-users", { admin , users });
+    res.render("admin/view-users", { admin, users });
   });
 };
 
@@ -39,7 +39,7 @@ const unBlockUser = (req, res, next) => {
     });
 };
 const category = async (req, res) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   try {
     let categories = await userHelpers.getCategory();
     res.render("admin/view-category", { admin, categories });
@@ -49,38 +49,37 @@ const category = async (req, res) => {
   }
 };
 const addCategory = (req, res) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   res.render("admin/add-category", { admin });
 };
 const categoryAdding = async (req, res) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   try {
-      console.log(req.body.title);
-      console.log(req.body.category);
-      const categoryData = {
-          title: req.body.title,
-          category: req.body.category,
-      };
-      
-      // Call categoryAdding function and wait for the result
-      const result = await userHelpers.categoryAdding(categoryData);
+    console.log(req.body.title);
+    console.log(req.body.category);
+    const categoryData = {
+      title: req.body.title,
+      category: req.body.category,
+    };
 
-      if (result.success) {
-          // Category added successfully
-          res.redirect("/admin/category");
-      } else {
-          // Category addition failed, display the message in the EJS file
-          res.render("admin/add-category", { error: result.message, admin});
-      }
+    // Call categoryAdding function and wait for the result
+    const result = await userHelpers.categoryAdding(categoryData);
+
+    if (result.success) {
+      // Category added successfully
+      res.redirect("/admin/category");
+    } else {
+      // Category addition failed, display the message in the EJS file
+      res.render("admin/add-category", { error: result.message, admin });
+    }
   } catch (error) {
-      console.error(error);
-      res.status(500).send("Internal Server Error");
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 };
 
-
 const getOrders = async (req, res) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   let orders = await productHelpers.getAllOrders();
   console.log(orders);
   res.render("admin/orders-list", { admin, orders });
@@ -93,24 +92,24 @@ const cancelOrder = async (req, res) => {
     res.redirect("/admin/orders");
   });
 };
-const verifyAdminLogin=(req,res)=>{
-     const { email, password } = req.body;
-     console.log("admin details is: "+email+password);
-     productHelpers.doAdminLogin(email, password).then((response) => {
-      if (response.status) {
-        req.session.authorized = true;
-        req.session.admin = response.admin;
-        res.redirect("/admin/view-products");
-      } else {
-        req.session.loginErr = response.message || "Invalid Username or password";
-        res.redirect("/admin");
-      }
-    });
-}
-const adminLogout=(req,res)=>{
+const verifyAdminLogin = (req, res) => {
+  const { email, password } = req.body;
+  console.log("admin details is: " + email + password);
+  productHelpers.doAdminLogin(email, password).then((response) => {
+    if (response.status) {
+      req.session.authorized = true;
+      req.session.admin = response.admin;
+      res.redirect("/admin/view-products");
+    } else {
+      req.session.loginErr = response.message || "Invalid Username or password";
+      res.redirect("/admin");
+    }
+  });
+};
+const adminLogout = (req, res) => {
   req.session.destroy();
   res.redirect("/admin");
-}
+};
 module.exports = {
   getUsers,
   blockUser,
@@ -121,5 +120,5 @@ module.exports = {
   getOrders,
   cancelOrder,
   verifyAdminLogin,
-  adminLogout
+  adminLogout,
 };

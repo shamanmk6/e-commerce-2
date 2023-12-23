@@ -1,7 +1,7 @@
 const multer = require("multer");
 const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
-const upload=require("../middlewares/upload")
+const upload = require("../middlewares/upload");
 
 // const storage = multer.diskStorage({
 //   destination: function (req, file, cb) {
@@ -15,13 +15,14 @@ const upload=require("../middlewares/upload")
 
 // const upload = multer({ storage: storage });
 
-const adminLogin=(req,res)=>{
-  res.render("admin/admin-login",{admin:true})
-}
+const adminLogin = (req, res) => {
+  res.render("admin/admin-login", { admin: true });
+};
 const getProducts = (req, res, next) => {
-  const admin=req.session.admin
+  const admin = req.session.admin;
   console.log(admin);
   productHelpers.getAllProducts().then((products) => {
+    console.log("admin page products are: " + JSON.stringify(products));
     res.render("admin/view-products", { admin, products });
   });
 };
@@ -43,7 +44,7 @@ const productAdding = (req, res, next) => {
       console.log(image.filename);
     });
     try {
-      const id = await productHelpers.addProduct(req.body,req.files);
+      const id = await productHelpers.addProduct(req.body, req.files);
 
       let images = req.files;
 
@@ -64,43 +65,83 @@ const productAdding = (req, res, next) => {
   });
 };
 
+// const deleteProduct = (req, res, next) => {
+//   let proId = req.params.id;
+//   console.log(proId);
+//   productHelpers.deleteProduct(proId).then((response) => {
+//     res.redirect("/admin/view-products");
+//   });
+// };
 const deleteProduct = (req, res, next) => {
   let proId = req.params.id;
   console.log(proId);
-  productHelpers.deleteProduct(proId).then((response) => {
-    res.redirect("/admin");
-  });
+  productHelpers
+    .deleteProduct(proId)
+    .then((response) => {
+      res.json({ success: true });
+    })
+    .catch((error) => {
+      // Handle error, e.g., send an error response
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to delete product." });
+    });
 };
-
+// const restoreProduct = (req, res, next) => {
+//   let proId = req.params.id;
+//   console.log(proId);
+//   productHelpers.restoreProduct(proId).then((response) => {
+//     res.redirect("/admin/view-products");
+//   });
+// };
+const restoreProduct = (req, res, next) => {
+  let proId = req.params.id;
+  console.log(proId);
+  productHelpers
+    .restoreProduct(proId)
+    .then((response) => {
+      res.json({ success: true });
+    })
+    .catch((error) => {
+      // Handle error, e.g., send an error response
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to restore product." });
+    });
+};
 const editProduct = async (req, res, next) => {
   productHelpers.getAllCategories().then(async (categories) => {
     let product = await productHelpers.getProductDetails(req.params.id);
     console.log(product);
     res.render("admin/edit-products", { admin: true, product, categories });
-});
+  });
 };
 
 const updateProduct = (req, res, next) => {
   console.log(req.params.id);
   let id = req.params.id;
   upload.array("image")(req, res, async (err) => {
-      if (err) {
-          console.log(err);
-          return res.status(400).json({ error: err.message });
-      }
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: err.message });
+    }
 
-      console.log(req.body);
-      req.files.forEach((image) => {
-          console.log(image.filename);
-      });
+    console.log(req.body);
+    req.files.forEach((image) => {
+      console.log(image.filename);
+    });
 
-      try {
-          await productHelpers.updateProduct(id, req.body, req.files.map(file => file.filename));
-          res.redirect("/admin");
-      } catch (error) {
-          console.error(error);
-          res.status(500).json({ error: "Internal Server Error" });
-      }
+    try {
+      await productHelpers.updateProduct(
+        id,
+        req.body,
+        req.files.map((file) => file.filename)
+      );
+      res.redirect("/admin");
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   });
 };
 const viewProducts = async (req, res, next) => {
@@ -164,9 +205,10 @@ module.exports = {
   addProducts,
   productAdding,
   deleteProduct,
+  restoreProduct,
   editProduct,
   updateProduct,
   productDetails,
   viewProducts,
-  adminLogin
+  adminLogin,
 };

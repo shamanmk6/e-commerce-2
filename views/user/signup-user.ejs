@@ -1,15 +1,14 @@
-
-
 <body>
-    <!-- Login 8 - Bootstrap Brain Component -->
-<section class="bg-light p-3 p-md-4 p-xl-5">
+  <!-- Login 8 - Bootstrap Brain Component -->
+  <section class="bg-light p-3 p-md-4 p-xl-5">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-12 col-xxl-11">
           <div class="card border-light-subtle shadow-sm">
             <div class="row g-0">
               <div class="col-12 col-md-6">
-                <img class="img-fluid rounded-start w-100 h-100 object-fit-cover" loading="lazy" src="/img/product-1.jpg" alt="">
+                <img class="img-fluid rounded-start w-100 h-100 object-fit-cover" loading="lazy"
+                  src="/img/product-1.jpg" alt="">
               </div>
               <div class="col-12 col-md-6 d-flex align-items-center justify-content-center">
                 <div class="col-12 col-lg-11 col-xl-10">
@@ -17,61 +16,67 @@
                     <div class="row">
                       <div class="col-12">
                         <div class="mb-5">
-                          
+
                           <h4 class="text-center">SIgnup Now</h4>
                         </div>
                       </div>
                     </div>
-                   
+
                     <form action="/signup" method="post">
                       <div class="row gy-3 overflow-hidden">
                         <div class="col-12">
                           <div class="form-floating mb-3">
                             <label for="email" class="form-label">Username</label>
-                            <input type="text" class="form-control" name="name" id="email" placeholder="username" required>
-                            
+                            <input type="text" class="form-control" name="name" id="email" placeholder="username"
+                              required>
+
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-floating mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com" required>
-                            
+                            <input type="email" class="form-control" name="email" id="email"
+                              placeholder="name@example.com" required>
+
                           </div>
                         </div>
                         <div class="col-12">
                           <div class="form-floating mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" name="password" id="password" value="" placeholder="Password" required>
-                            
+                            <input type="password" class="form-control" name="password" id="password" value=""
+                              placeholder="Password" required>
+
                           </div>
                         </div>
-                          <div class="col-12">
-                            <div class="form-floating mb-3">
-                              <label for="password" class="form-label">Confirm Password</label>
-                              <input type="password" class="form-control" name="confirmPwd" id="password" value="" placeholder="Password" required>
-                            </div>
-                          </div>
-                          <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
-                            <p class="error-message"><%= errorMessage %></p>
-                        <% } %>
-                        
-                        
                         <div class="col-12">
-                          <div class="d-grid">
-                            <button class="btn btn-dark btn-lg ml-5" type="submit">Sign Up</button>
+                          <div class="form-floating mb-3">
+                            <label for="password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" name="confirmPwd" id="password" value=""
+                              placeholder="Password" required>
                           </div>
                         </div>
-                        <div>
-                        <% if (message) { %>
-                          <p class="mt-2">
-                            <%= ' '+message %>
+                        <% if (typeof errorMessage !=='undefined' && errorMessage) { %>
+                          <p class="error-message">
+                            <%= errorMessage %>
                           </p>
                           <% } %>
-                        </div>
+
+
+                            <div class="col-12">
+                              <div class="d-grid">
+                                <button class="btn btn-dark btn-lg ml-5" type="submit">Sign Up</button>
+                              </div>
+                            </div>
+                            <div>
+                              <% if (message) { %>
+                                <p class="mt-2">
+                                  <%= ' ' +message %>
+                                </p>
+                                <% } %>
+                            </div>
                       </div>
                     </form>
-                    
+
                   </div>
                 </div>
               </div>
