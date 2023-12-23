@@ -1,39 +1,47 @@
 <body>
-    <head>
-      <!-- Other head elements -->
-  
-      <!-- Stylesheets -->
-      <link rel="stylesheet" href="/stylesheets/style.css">
-      <!-- Add other stylesheet links if needed -->
-  </head>
 
-<div class="container-fluid pt-5">
-    <div class="row px-xl-5">
-        <div class="col-lg-8 table-responsive mb-5" style="margin-left: 150px;">
-            <table class="table table-bordered text-center mb-0">
-                <thead class="bg-secondary text-dark">
-                    
-                    <tr>
-                        <th>Products</th>
-                        
-                        <th>Quantity</th>
-                        <th>Total</th>
-                        
-                    </tr>
-                </thead>
-                <tbody class="align-middle">
-                    <% products.forEach(function(item){ %>
-                    <tr>
-                        <td class="align-middle"><img src="/product-images/<%= item.product.images[0] %> " alt="" style="width: 50px;"><%= item.product.name %></td>
-                        
-                        <td class="align-middle"><%= item.quantity%></td>
-                        <td class="align-middle"><%= item.product.price%></td>
-                       
-                    </tr>
-                    <% }) %>
-                    
-                </tbody>
-            </table>
+    <head>
+        <!-- Other head elements -->
+
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="/stylesheets/style.css">
+        <!-- Add other stylesheet links if needed -->
+    </head>
+
+    <div class="container-fluid pt-5">
+        <div class="row px-xl-5">
+            <div class="col-lg-8 table-responsive mb-5" style="margin-left: 150px;">
+                <table class="table table-bordered text-center mb-0">
+                    <thead class="bg-secondary text-dark">
+
+                        <tr>
+                            <th>Products</th>
+
+                            <th>Quantity</th>
+                            <th>Total</th>
+
+                        </tr>
+                    </thead>
+                    <tbody class="align-middle">
+                        <% products.forEach(function(item){ %>
+                            <tr>
+                                <td class="align-middle"><img src="/product-images/<%= item.product.images[0] %> "
+                                        alt="" style="width: 50px;">
+                                    <%= item.product.name %>
+                                </td>
+
+                                <td class="align-middle">
+                                    <%= item.quantity%>
+                                </td>
+                                <td class="align-middle">
+                                    <%= item.product.price%>
+                                </td>
+
+                            </tr>
+                            <% }) %>
+
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>

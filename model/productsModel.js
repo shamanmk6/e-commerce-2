@@ -23,11 +23,15 @@ const productSchema = new mongoose.Schema({
   },
   quantity: {
     type: Number,
-    required:true
+    required: true,
   },
-  images:{
-    type:String,
-  }
+  images: {
+    type: String,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("product", productSchema);

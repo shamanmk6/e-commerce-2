@@ -94,7 +94,7 @@
                         <div class="form-group">
                             <div class="custom-control custom-radio">
                                 <input type="radio" class="custom-control-input" name="payment" id="paypal" value="COD">
-                                <label class="custom-control-label" for="paypal" >COD</label>
+                                <label class="custom-control-label" for="paypal">COD</label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -128,9 +128,9 @@
             method: 'post',
             data: $('#checkout-form').serialize(),
             success: (response) => {
-               if(response.status){
-                location.href='/order-success'
-               }
+                if (response.status) {
+                    location.href = '/order-success'
+                }
             }
         })
     })

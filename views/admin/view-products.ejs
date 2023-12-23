@@ -1,9 +1,87 @@
+<head>
+
+    <head>
+        <style>
+            .btn.blocked {
+                opacity: 0.5;
+                /* You can adjust the opacity or add other styles */
+                pointer-events: none;
+            }
+        </style>
+
+        <!-- Uncomment the jQuery script tag if it's still commented -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+        <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css"> -->
+
+
+
+        <!-- Other head elements -->
+
+    </head>
+</head>
+
 <!--**********************************
             Content body start
-        ***********************************-->
+  
+            ***********************************-->
 
 <body>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#myTable').DataTable();
+        });
+
+        // Function to initialize event listeners for block and unblock buttons
+        function initializeButtonListeners() {
+            // Event delegation to handle dynamic changes
+            $('#products').on('click', '.btn-success', function () {
+                restorePro($(this).data('product-id'));
+            });
+
+            $('#products').on('click', '.btn-danger', function () {
+                deletePro($(this).data('product-id'));
+            });
+        }
+
+        function updateUI(proId, isDeleted) {
+            console.log('Updating UI for product ID:', proId, 'Is deleted:', isDeleted);
+
+            // Find the product element using the data-product-id attribute
+            var productElement = $('[data-product-id="' + proId + '"]');
+
+            // Check if the element was found
+            if (productElement.length > 0) {
+                // Find the delete and restore buttons within the product element
+                var deleteButton = productElement.find('.btn-danger');
+                var restoreButton = productElement.find('.btn-success');
+
+                // Check if the buttons were found
+                if (deleteButton.length > 0 && restoreButton.length > 0) {
+                    // Update classes based on isDeleted
+                    if (isDeleted) {
+                        deleteButton.addClass('deleted');
+                        restoreButton.removeClass('deleted');
+                    } else {
+                        deleteButton.removeClass('deleted');
+                        restoreButton.addClass('deleted');
+                    }
+                } else {
+                    console.error('Buttons not found within the product element.');
+                }
+            } else {
+                console.error('Product element not found.');
+            }
+        }
+
+        $(document).ready(function () {
+            initializeButtonListeners();
+        });
+
+    </script>
 
     <div class="content-body">
 
@@ -17,7 +95,7 @@
         </div>
         <!-- row -->
 
-        <div class="container-fluid">
+        <div class="container-fluid" id="products">
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -43,6 +121,7 @@
                                 </thead>
                                 <tbody>
                                     <% products.forEach(function(product){ %>
+
                                         <tr>
                                             <td>
                                                 <%= product.name %>
@@ -71,10 +150,33 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <a href="/admin/delete-product/<%= product._id %>">
-                                                    <button type="button" class="btn btn-danger"
-                                                        onclick="return confirm('Are you sure want to delete <%= product.Name %>')">Delete</button>
-                                                </a>
+
+                                                <% if (!product.isDeleted) { %>
+                                                    <!-- <a href="/admin/delete-product/<%= product._id %>">
+                                                        <button type="button" class="btn btn-danger"
+                                                            onclick="return confirm('Are you sure want to delete <%= product.name %>')">Delete</button>
+                                                    </a> -->
+
+                                                    <a>
+
+                                                        <button type="button" class="btn btn-danger"
+                                                            data-product-id="<%= product._id %>"
+                                                            onclick="deletePro('<%= product._id %>')">delete</button>
+
+
+                                                    </a>
+                                                    <% } else { %>
+                                                        <!-- <a href="/admin/restore-product/<%= product._id %>">
+                                                        <button type="button" class="btn btn-danger"
+                                                            onclick="return confirm('Are you sure want to Restore <%= product.name %>')">Restore</button>
+                                                    </a> -->
+
+                                                        <a>
+                                                            <button type="button" class="btn btn-success"
+                                                                data-product-id="<%= product._id %>"
+                                                                onclick="restorePro('<%= product._id %>')">restore</button>
+                                                        </a>
+                                                        <% } %>
                                             </td>
                                         </tr>
                                         <% }) %>
@@ -104,6 +206,86 @@
         <!-- #/ container -->
     </div>
     <script>
+
+        function restorePro(id) {
+            Swal.fire({
+                title: 'Confirm Restore',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF0000',
+                cancelButtonColor: '	#008000',
+                confirmButtonText: 'Are you sure want to Restore this product?'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make an Ajax request to unblock the user
+                    $.ajax({
+                        url: '/admin/restore-product/' + id,
+                        type: 'get',
+                        success: function (response) {
+                            console.log("success:", response);
+                            if (response && response.success) {
+                                // Handle success, e.g., show a success message
+                                Swal.fire('Restored!', 'Product has been Restored.', 'success');
+                                // Call updateUI with the appropriate parameters
+                                updateUI(id, false);
+                                // Optionally, you can update the UI or redirect to another page
+                                // window.location = '/admin/users';
+                            } else {
+                                // Handle failure, e.g., show an error message
+                                Swal.fire('Error', response.message || 'Failed to restore product.', 'error');
+                            }
+                        },
+                        error: function () {
+                            // Handle errors, e.g., show an error message
+                            console.log("Error: ", xhr, status, error);
+                            Swal.fire('Error', 'Something went wrong.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function deletePro(id) {
+            console.log('Deleting product with ID:', id);
+            if (id) {
+                Swal.fire({
+                    title: 'Confirm delete',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF0000',
+                    cancelButtonColor: '#008000',
+                    confirmButtonText: 'Are you sure want to delete this product?'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Make an Ajax request to block the user
+                        $.ajax({
+                            url: '/admin/delete-product/' + id,
+                            type: 'get',
+                            success: function (response) {
+                                if (response.success) {
+                                    // Handle success, e.g., show a success message
+                                    Swal.fire('Deleted!', 'Product has been Deleted.', 'success');
+                                    // Call updateUI with the appropriate parameters
+                                    updateUI(id, true);
+                                } else {
+                                    // Handle failure, e.g., show an error message
+                                    Swal.fire('Error', 'Failed to block user.', 'error');
+                                }
+                            },
+                            error: function () {
+                                // Handle errors, e.g., show an error message
+                                Swal.fire('Error', 'Something went wrong.', 'error');
+                            }
+                        });
+                    }
+                });
+            } else {
+                console.error("product id is undefined");
+            }
+        }
+
+
+
         history.pushState(null, null, location.href);
         window.onpopstate = function (event) {
             history.go(1);

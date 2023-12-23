@@ -1,5 +1,3 @@
-
-
 <div class="content-body">
     <div class="container-fluid">
         <div class="row">
@@ -10,21 +8,21 @@
                         <div class="basic-form">
                             <form action="/admin/add-category" method="post">
                                 <!-- In your EJS file -->
-                                <% if (typeof error !== 'undefined') { %>
+                                <% if (typeof error !=='undefined' ) { %>
                                     <div class="alert alert-danger" role="alert">
                                         <%= error %>
                                     </div>
-                                <% } %>
-                                <div class="form-group col-md-6">
-                                    <label>Title</label>
-                                    <input type="text" name="title" class="form-control" placeholder="Title">
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label>Category</label>
-                                    <input type="text" name="category" class="form-control"
-                                        placeholder="Category">
-                                </div>
-                                <button type="submit" class="btn btn-dark">ADD</button>
+                                    <% } %>
+                                        <div class="form-group col-md-6">
+                                            <label>Title</label>
+                                            <input type="text" name="title" class="form-control" placeholder="Title">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Category</label>
+                                            <input type="text" name="category" class="form-control"
+                                                placeholder="Category">
+                                        </div>
+                                        <button type="submit" class="btn btn-dark">ADD</button>
                             </form>
                         </div>
                     </div>

@@ -6,9 +6,9 @@ const { ObjectId } = require("mongodb");
 const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
 const User = require("../model/userModel");
-const UserOTPVerification=require("../model/userOTPVerificationModel")
+const UserOTPVerification = require("../model/userOTPVerificationModel");
 const nodeMailer = require("nodemailer");
-const otpGenerator = require('otp-generator')
+const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 
 const sendVerifyEmail = async (name, email, user_id, response) => {
@@ -24,7 +24,11 @@ const sendVerifyEmail = async (name, email, user_id, response) => {
       },
     });
 
-    const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
     const mailOptions = {
       from: "mohammedshaman83@gmail.com",
       to: email,
@@ -50,8 +54,7 @@ const sendVerifyEmail = async (name, email, user_id, response) => {
   }
 };
 
-
-const sendResetEmail = async (user,response) => {
+const sendResetEmail = async (user, response) => {
   try {
     const transporter = nodeMailer.createTransport({
       host: "smtp.gmail.com",
@@ -64,14 +67,18 @@ const sendResetEmail = async (user,response) => {
       },
     });
 
-    const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
     const mailOptions = {
       from: "mohammedshaman83@gmail.com",
       to: user.email,
       subject: "For verification mail",
       text: `Your otp is: ${otp}`,
     };
-    const userId=user._id
+    const userId = user._id;
 
     const saltRounds = 10;
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
@@ -118,7 +125,7 @@ const registerUser = async (req, res, next) => {
       // User registered successfully, send verification email
       console.log(result.name);
       console.log(result.email);
-      sendVerifyEmail(result.name, result.email, result.Id,res);
+      sendVerifyEmail(result.name, result.email, result.Id, res);
       // res.render("user/enter-otp", { message: "Please check your email for otp" });
     }
   } catch (error) {
@@ -157,8 +164,6 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-
-
 const forgotPassword = (req, res) => {
   res.render("user/forgot-password");
 };
@@ -167,7 +172,7 @@ const resetPassword = (req, res) => {
   userHelpers
     .resetPassword(req.body)
     .then((user) => {
-      sendResetEmail(user,res);
+      sendResetEmail(user, res);
     })
     .catch((error) => {
       const message = error.message || "Internal Server Error";
@@ -193,8 +198,8 @@ const getCart = async (req, res) => {
   let user = req.session.user;
   let cartItems = await userHelpers.getCartProducts(req.session.user._id);
   let totalValue = await userHelpers.getTotalAmount(req.session.user._id);
-  console.log('cartItems: ',cartItems);
-  cartItems.forEach(cartItem => {
+  console.log("cartItems: ", cartItems);
+  cartItems.forEach((cartItem) => {
     // Access the product property of each cart item
     console.log("Images are:", cartItem.product.images);
   });
@@ -279,81 +284,85 @@ const changeProfile = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-const enterOTP=(req,res)=>{
+const enterOTP = (req, res) => {
   const userId = req.query.userId;
-  console.log("userId at enter otp is: "+userId);
-     res.render('user/enter-otp',{userId})
-}
-const enterOTPForgot=(req,res)=>{
+  console.log("userId at enter otp is: " + userId);
+  res.render("user/enter-otp", { userId });
+};
+const enterOTPForgot = (req, res) => {
   const userId = req.query.userId;
-  console.log("userId at enter otp forgot is: "+userId);
-     res.render('user/enter-otp-forgot',{userId})
-}
+  console.log("userId at enter otp forgot is: " + userId);
+  res.render("user/enter-otp-forgot", { userId });
+};
 
-const verifyOTP=async (req,res)=>{
+const verifyOTP = async (req, res) => {
   try {
-    const otp=req.body.otp;
+    const otp = req.body.otp;
     const userId = req.body.userId;
-    console.log("otp is: "+otp);
+    console.log("otp is: " + otp);
     console.log("userId is: " + userId);
-    const verificationResult=await userHelpers.otpVerify(otp,userId)
-    if (verificationResult.status){
-     res.redirect('/login');
-    }else{
-     res.render('user/enter-otp', { userId, errorMessage: verificationResult.message });
+    const verificationResult = await userHelpers.otpVerify(otp, userId);
+    if (verificationResult.status) {
+      res.redirect("/login");
+    } else {
+      res.render("user/enter-otp", {
+        userId,
+        errorMessage: verificationResult.message,
+      });
     }
   } catch (error) {
     console.error(error);
-    
+
     res.status(500).json({ error: "Internal Server Error" });
   }
-  
-}
-const verifyOTPForgot=async (req,res)=>{
+};
+const verifyOTPForgot = async (req, res) => {
   try {
-    const otp=req.body.otp;
+    const otp = req.body.otp;
     const userId = req.body.userId;
-    console.log("otp is: "+otp);
+    console.log("otp is: " + otp);
     console.log("userId is: " + userId);
-    const verificationResult=await userHelpers.otpVerify(otp,userId)
-    if (verificationResult.status){
-     res.redirect(`/resetPassword?userId=${userId}`);
-    }else{
-     res.render('user/enter-otp-forgot', { userId, errorMessage: verificationResult.message });
+    const verificationResult = await userHelpers.otpVerify(otp, userId);
+    if (verificationResult.status) {
+      res.redirect(`/resetPassword?userId=${userId}`);
+    } else {
+      res.render("user/enter-otp-forgot", {
+        userId,
+        errorMessage: verificationResult.message,
+      });
     }
   } catch (error) {
     console.error(error);
-    
+
     res.status(500).json({ error: "Internal Server Error" });
   }
-  
-}
-const resendOTP=async(req,res)=>{
+};
+const resendOTP = async (req, res) => {
   const userId = req.query.userId;
   const user = await db
     .getDatabase()
     .collection(collection.USER_COLLECTION)
     .findOne({ _id: new ObjectId(userId) });
 
-    if (user){
-      await sendVerifyEmail(user.name, user.email, userId, res);
-    }else {
-      res.status(404).send('User not found.');
-    }
-}
-const resendOTPForgot=async(req,res)=>{
+  if (user) {
+    await sendVerifyEmail(user.name, user.email, userId, res);
+  } else {
+    res.status(404).send("User not found.");
+  }
+};
+const resendOTPForgot = async (req, res) => {
   const userId = req.query.userId;
   const user = await db
     .getDatabase()
     .collection(collection.USER_COLLECTION)
     .findOne({ _id: new ObjectId(userId) });
 
-    if (user){
-      await sendVerifyEmail(user.name, user.email, userId, res);
-    }else {
-      res.status(404).send('User not found.');
-    }
-}
+  if (user) {
+    await sendVerifyEmail(user.name, user.email, userId, res);
+  } else {
+    res.status(404).send("User not found.");
+  }
+};
 
 module.exports = {
   loginUser,
