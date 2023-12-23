@@ -1,0 +1,120 @@
+    <!-- enter-otp.ejs -->
+
+    <head>
+        <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: #fafafa; /* fallback for old browsers */
+        }
+    
+        .container {
+            display: flex;
+            flex-flow: column;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        .userInput {
+            display: flex;
+            justify-content: center; /* Center the input boxes horizontally */
+            margin-top: 15px; /* Add margin for spacing */
+        }
+    
+        input {
+            margin: 0 10px; /* Add margin between input boxes */
+            height: 35px;
+            width: 65px;
+            border-color: rgb(67, 67, 67);
+            border-radius: 5px;
+            text-align: center;
+            font-family: arimo;
+            font-size: 1.2rem;
+            background: #ffffff;
+        }
+    
+        h1 {
+            text-align: center;
+            font-family: arimo;
+            color: rgb(10, 10, 10);
+        }
+    
+        h3 {
+            text-align: center;
+            font-family: arimo;
+        }
+    
+        button {
+            width: 150px;
+            height: 40px;
+            margin-top: 0px; /* Adjust the margin for spacing */
+            font-family: arimo;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 5px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            background: #616161; /* fallback for old browsers */
+            background: -webkit-linear-gradient(
+            to right,
+            #565656,
+            #616161
+            ); /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(
+            to right,
+            #9bc5c3,
+            #616161
+            ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+        </style>
+    </head>
+    
+    <!-- enter-otp.ejs -->
+    
+    <body>
+        <div class="container">
+        <h1>ENTER OTP</h1>
+        <% if (typeof errorMessage !== 'undefined') { %>
+            <p style="color: red;"><%= errorMessage %></p>
+          <% } %>
+      
+    
+        <form action="/verify-otp-forgot" method="post" onsubmit="prepareConcatenatedOTP()">
+            <div class="userInput">
+            <input type="text" name="digit1" id="digit1" oninput="moveToNext(this)">
+            <input type="text" name="digit2" id="digit2" oninput="moveToNext(this)">
+            <input type="text" name="digit3" id="digit3" oninput="moveToNext(this)">
+            <input type="text" name="digit4" id="digit4" oninput="moveToNext(this)">
+            <input type="text" name="digit5" id="digit5" oninput="moveToNext(this)">
+            <input type="text" name="digit6" id="digit6" oninput="moveToNext(this)">
+            <input type="hidden" name="otp" id="otp">
+            <input type="hidden" name="userId" value="<%= userId %>">
+            <button type="submit">CONFIRM</button>
+            </div>
+            
+        </form>
+        <a href="/resend-otp-forgot?userId=<%= userId %>"><h3>Resend OTP</h3></a>
+        </div>
+    
+        <script>
+        function moveToNext(current) {
+            if (current.value.length === current.maxLength) {
+            var nextElement = current.nextElementSibling;
+            if (nextElement && nextElement.tagName === "INPUT") {
+                nextElement.focus();
+            }
+            }
+        }
+    
+        function prepareConcatenatedOTP() {
+            var otp = "";
+            for (let i = 1; i <= 6; i++) {
+            otp += document.getElementById("digit" + i).value;
+            }
+            document.getElementById("otp").value = otp;
+        }
+        </script>
+    </body>
+    

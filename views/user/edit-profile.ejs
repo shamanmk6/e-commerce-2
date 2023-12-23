@@ -1,0 +1,42 @@
+<head>
+    <!-- Other head elements -->
+
+    <!-- Stylesheets -->
+    <!-- <link rel="stylesheet" href="/stylesheets/style.css"> -->
+    <!-- Add other stylesheet links if needed -->
+</head>
+<div class="container-fluid pt-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-12">
+            <div class="mb-4">
+                <form action="/edit-profile/<%= userDetails._id %>" id="" method="post">
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>Name</label>
+                        <input class="form-control" type="text" placeholder="" name="name" value="<%= userDetails.name %>" >
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>E-mail</label>
+                        <input class="form-control" type="text" placeholder="example@email.com" name="email" value="<%= userDetails.email %>">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Mobile No</label>
+                        <input class="form-control" type="text" placeholder="+123 456 789" name="mobile" value="<%= userDetails.mobile %>" >
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Address</label>
+                        <input class="form-control" type="text" placeholder="123 Street" name="address" value="<%= userDetails.address %>" >
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Pincode</label>
+                        <input class="form-control" type="text" placeholder="123 Street" name="pincode" value="<%= userDetails.pincode %>" >
+                    </div>
+                    
+                    
+                </div>
+                <button class="btn-primary" type="submit">Submit</button>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>

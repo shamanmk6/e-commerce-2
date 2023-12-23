@@ -1,0 +1,36 @@
+<!-- views/error.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <!-- Include your stylesheets or any other head content here -->
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 mt-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Error</h2>
+                        <% if (error.status) { %>
+                            <p>Status: <%= error.status %></p>
+                        <% } %>
+                        <% if (error.message) { %>
+                            <p><%= error.message %></p>
+                        <% } %>
+                        <!-- You can customize the content based on the properties of the error object -->
+                        <p>Sorry, something went wrong.</p>
+                        <a href="/">Go to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

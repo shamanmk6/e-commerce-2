@@ -1,0 +1,46 @@
+
+<div class="container-fluid bg-secondary mb-5">
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 300px">
+        <h1 class="font-weight-semi-bold text-uppercase mb-3">Orders</h1>
+        <div class="d-inline-flex">
+            <p class="m-0"><a href="">Home</a></p>
+            <p class="m-0 px-2">-</p>
+            <p class="m-0">Orders</p>
+        </div>
+    </div>
+</div>
+<div class="container-fluid pt-5" style="margin-left: 100px;">
+    <div class="row px-xl-5">
+        <div class="col-lg-8 table-responsive mb-5">
+            <table class="table table-bordered text-center mb-0">
+                <thead class="bg-secondary text-dark">
+                    <tr>
+                        
+                        <th>Date</th>
+                        <th>Address</th>
+                        <th>Total Amount</th>
+                        <th>Mobile</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>View Details</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle">
+                    <% orders.forEach(function(order){ %>
+                    <tr>
+                        
+                        <td class="align-middle"><%= order.date %></td>
+                        <td class="align-middle"><%= order.deliveryDetails.address %></td>
+                        <td class="align-middle">₹<%= order.totalAmount %>.00</td>
+                        <td class="align-middle"><%= order.deliveryDetails.mobile %></td>
+                        <td class="align-middle"><%= order.paymentMethod %></td>
+                        <td class="align-middle"><%= order.status %></td>
+                        <td><a href="/view-ordered-products/<%= order._id %>" class="btn btn-primary">View Details</a></td>
+                    </tr>
+                    <% }) %>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

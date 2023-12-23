@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Your head content goes here -->
+</head>
+
+<body>
+    <% if(typeof admin !== 'undefined' && admin) { %>
+       <%- include('../partials/admin-header.ejs') %>
+    <% } else { %>
+        <%- include('../partials/user-header.ejs', { cartCount: typeof cartCount !== 'undefined' ? cartCount : 0 }) %>
+   <% } %>
+
+    <%- body %>
+
+    <% if(typeof admin !== 'undefined' && admin) { %>
+       <%- include('../partials/admin-footer.ejs') %>
+    <% } else { %>
+        <%- include('../partials/user-footer.ejs') %>
+   <% } %>
+</body>
+
+
+</html>
