@@ -1,236 +1,99 @@
-<!--**********************************
-            Content body start
-        ***********************************-->
-
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
-
 <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <style>
-        .btn.blocked {
-            opacity: 0.5;
-            /* You can adjust the opacity or add other styles */
-            pointer-events: none;
+        .table th,
+        .table td {
+            width: 33.33%;
+            /* Example: Equal width for each column */
         }
     </style>
-
-    <!-- Uncomment the jQuery script tag if it's still commented -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css"> -->
-
-
-
-    <!-- Other head elements -->
-
 </head>
 
 <body>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#myTable').DataTable();
-        });
-
-        // Function to initialize event listeners for block and unblock buttons
-        function initializeButtonListeners() {
-            // Event delegation to handle dynamic changes
-            $('#users').on('click', '.btn-success', function () {
-                unblock($(this).data('user-id'));
-            });
-
-            $('#users').on('click', '.btn-danger', function () {
-                block($(this).data('user-id'));
-            });
-        }
-
-        // Function to update the UI dynamically
-        function updateUI(userId, isBlocked) {
-            var userElement = $('[data-user-id="' + userId + '"]');
-            if (userElement.length > 0) {
-                var blockButton = userElement.find('.btn-danger');
-                var unblockButton = userElement.find('.btn-success');
-
-                if (isBlocked) {
-                    blockButton.addClass('blocked');
-                    unblockButton.removeClass('blocked');
-                } else {
-                    blockButton.removeClass('blocked');
-                    unblockButton.addClass('blocked');
-                }
-            }
-        }
-
-        // Call initializeButtonListeners when the document is ready
-        $(document).ready(function () {
-            initializeButtonListeners();
-        });
-    </script>
-
-
-
-
     <div class="content-body">
-
-        <div class="row page-titles mx-0">
-            <div class="col p-md-0">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="javascript:void(0)">Dashboard</a></li>
-                    <li class="breadcrumb-item active"><a href="javascript:void(0)">Users</a></li>
-                </ol>
-            </div>
-        </div>
-        <!-- row -->
-
-        <div class="container-fluid" id="users">
+        <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <h4 class="card-title">Data Table</h4>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered zero-configuration mt-3" id="myTable">
-                                <thead>
+                    <div class="table-responsive">
+                        <table class="table table-striped" style=" width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email ID</th>
+                                    <th scope="col">Verified</th>
+                                    <th scope="col">Block/Unblock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(function(users){ %>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Email Id</th>
-                                        <th>Verified</th>
+                                        <td>
+                                            <%= users.name %>
+                                        </td>
+                                        <td>
+                                            <%= users.email %>
+                                        </td>
+                                        <td>
+                                            <%= users.isVerified %>
+                                        </td>
+                                        <td>
+                                            <% if (!users.isBlocked) { %>
+                                                <button class="btn btn-danger block-unblock-button"
+                                                    data-id="<%= users._id %>"
+                                                    onclick="block('<%= users._id %>')">Block</button>
+                                                <% } else { %>
+                                                    <button class="btn btn-success block-unblock-button"
+                                                        data-id="<%= users._id %>"
+                                                        onclick="unblock('<%= users._id %>')">Unblock</button>
+                                        </td>
+                                        <% } %>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <% users.forEach(function(users){ %>
-                                        <tr>
-                                            <td>
-                                                <%= users.name %>
-                                            </td>
-                                            <td>
-                                                <%= users.email %>
-                                            </td>
-                                            <td>
-                                                <%= users.isVerified %>
-                                            </td>
-                                            <td>
-                                                <% if (!users.isBlocked) { %>
-                                                    <!-- <a href="/admin/block-user/<%= users._id %>">
-                                                        <button type="button" class="btn btn-danger"
-                                                            onclick="return confirm('Are you sure want to block <%= users.Name %>')">Block</button>
-                                                    </a> -->
-                                                    <a>
-
-                                                        <button type="button" class="btn btn-danger"
-                                                            data-user-id="<%= users._id %>"
-                                                            onclick="console.log('<%= users._id %>'); block('<%= users._id %>')">Block</button>
-
-
-                                                    </a>
-                                                    <% } else { %>
-                                                        <!-- <a href="/admin/unblock-user/<%= users._id %>">
-                                                            <button type="button" class="btn btn-success" onclick="return confirm('Are you sure want to unblock <%= users.Name %>')">Unblock</button>
-                                                        </a> -->
-                                                        <a>
-                                                            <button type="button" class="btn btn-success"
-                                                                data-user-id="<%= users._id %>"
-                                                                onclick="unblock('<%= users._id %>')">Unblock</button>
-                                                        </a>
-                                                        <% } %>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                </tbody>
-
-
-
-                                <tfoot>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-
-
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
+                                    <% }) %>
+                            </tbody>
+                        </table>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- #/ container -->
     </div>
-    <!--**********************************
-                    Content body end
-                ***********************************-->
 
-
-
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
     <script>
-        function unblock(id) {
-            Swal.fire({
-                title: 'Confirm Unblock',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#FF0000',
-                cancelButtonColor: '	#008000',
-                confirmButtonText: 'Are you sure want to Unblock this user?'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Make an Ajax request to unblock the user
-                    $.ajax({
-                        url: '/admin/unblock-user/' + id,
-                        type: 'get',
-                        success: function (response) {
-                            console.log("success:", response);
-                            if (response && response.success) {
-                                // Handle success, e.g., show a success message
-                                Swal.fire('Unblocked!', 'User has been unblocked.', 'success');
-                                // Call updateUI with the appropriate parameters
-                                updateUI(id, false);
-                                // Optionally, you can update the UI or redirect to another page
-                                // window.location = '/admin/users';
-                            } else {
-                                // Handle failure, e.g., show an error message
-                                Swal.fire('Error', response.message || 'Failed to unblock user.', 'error');
-                            }
-                        },
-                        error: function () {
-                            // Handle errors, e.g., show an error message
-                            console.log("Error: ", xhr, status, error);
-                            Swal.fire('Error', 'Something went wrong.', 'error');
-                        }
-                    });
-                }
-            });
-        }
-
         function block(id) {
             if (id) {
                 Swal.fire({
-                    title: 'Confirm block',
-                    icon: 'warning',
+                    title: "Confirm block",
+                    icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: '#FF0000',
-                    cancelButtonColor: '#008000',
-                    confirmButtonText: 'Are you sure want to Block this user?'
+                    confirmButtonColor: "#FF0000",
+                    cancelButtonColor: "#008000",
+                    confirmButtonText: "Are you sure want to Block this user?",
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Make an Ajax request to block the user
                         $.ajax({
-                            url: '/admin/block-user/' + id,
-                            type: 'get',
+                            url: "/admin/block-user/" + id,
+                            type: "get",
                             success: function (response) {
                                 if (response.success) {
-                                    // Handle success, e.g., show a success message
-                                    Swal.fire('Blocked!', 'User has been blocked.', 'success');
-                                    // Call updateUI with the appropriate parameters
-                                    updateUI(id, true);
+                                    Swal.fire("Blocked!", "User has been blocked.", "success");
+                                    updateButtonDisplay(id, true);
                                 } else {
-                                    // Handle failure, e.g., show an error message
-                                    Swal.fire('Error', 'Failed to block user.', 'error');
+                                    Swal.fire("Error", "Failed to block user.", "error");
                                 }
                             },
                             error: function () {
-                                // Handle errors, e.g., show an error message
-                                Swal.fire('Error', 'Something went wrong.', 'error');
+                                Swal.fire("Error", "Something went wrong.", "error");
                             }
                         });
                     }
@@ -240,6 +103,60 @@
             }
         }
 
-    </script>
+        function unblock(id) {
+            if (id) {
+                Swal.fire({
+                    title: "Confirm unblock",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#FF0000",
+                    cancelButtonColor: "#008000",
+                    confirmButtonText: "Are you sure want to unblock this user?",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/admin/unblock-user/" + id,
+                            type: "get",
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire("Unblocked!", "User has been unblocked.", "success");
+                                    updateButtonDisplay(id, false);
+                                } else {
+                                    Swal.fire("Error", "Failed to unblock user.", "error");
+                                }
+                            },
+                            error: function () {
+                                Swal.fire("Error", "Something went wrong.", "error");
+                            }
+                        });
+                    }
+                });
+            } else {
+                console.error("user id is undefined");
+            }
+        }
 
+        function updateButtonDisplay(id, isBlocked) {
+            var buttons = document.querySelectorAll('.block-unblock-button[data-id="' + id + '"]');
+            console.log("Buttons are: ",buttons);
+            buttons.forEach(function (button) {
+                if (isBlocked) {
+                    button.innerText = 'Unblock';
+                    button.setAttribute('onclick', 'unblock("' + id + '")');
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-success');
+                } else {
+                    button.innerText = 'Block';
+                    button.setAttribute('onclick', 'block("' + id + '")');
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-danger');
+                }
+            });
+        }
+
+
+
+
+
+    </script>
 </body>

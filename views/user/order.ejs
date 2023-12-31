@@ -19,34 +19,76 @@
             <div class="col-lg-8">
                 <div class="mb-4">
                     <h4 class="font-weight-semi-bold mb-4">Billing Address</h4>
-
                     <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>First Name</label>
-                            <input class="form-control" type="text" placeholder="John" name="fname">
+                        <label class="col-md-12">Select Address</label>
+                        <div class="col-md-6">
+                            <input type="radio" name="addressGroup" value="address1" id="address1" checked>
+                            <label for="address1" style="font-weight: bolder;">Address In Profile</label>
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label>Last Name</label>
-                            <input class="form-control" type="text" placeholder="Doe" name="lname">
+                        <div class="col-md-6">
+                            <input type="radio" name="addressGroup" value="address2" id="address2">
+                            <label for="address2" style="font-weight: bolder;">New Address</label>
                         </div>
-                        <div class="col-md-6 form-group">
-                            <label>E-mail</label>
-                            <input class="form-control" type="text" placeholder="example@email.com" name="email">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Mobile No</label>
-                            <input class="form-control" type="text" placeholder="+123 456 789" name="mobile">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Address</label>
-                            <input class="form-control" type="text" placeholder="123 Street" name="address">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Pincode</label>
-                            <input class="form-control" type="text" placeholder="123 Street" name="pincode">
-                        </div>
-                        <input type="text" name="userId" value="<%= user._id%>" hidden>
                     </div>
+                    <div class="row address-fields" id="address1Fields">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Name</label>
+                                <input class="form-control" type="text" placeholder="John" name="name"
+                                    value="<%= userDetails.name %>" readonly>
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label>E-mail</label>
+                                <input class="form-control" type="text" placeholder="example@email.com" name="email"
+                                    value="<%= userDetails.email %>" readonly>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Mobile No</label>
+                                <input class="form-control" type="text" placeholder="+123 456 789" name="mobile"
+                                    value="<%= userDetails.mobile %>" readonly>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Address</label>
+                                <input class="form-control" type="text" placeholder="123 Street" name="address"
+                                    value="<%= userDetails.address %>" readonly>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Pincode</label>
+                                <input class="form-control" type="text" placeholder="123 Street" name="pincode"
+                                    value="<%= userDetails.pincode %>" readonly>
+                            </div>
+                            <input type="text" name="userId" value="<%= user._id%>" hidden>
+                        </div>
+                    </div>
+                    <div class="row address-fields" id="address2Fields" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label>Name</label>
+                                <input class="form-control" type="text" placeholder="John" name="name">
+                            </div>
+
+                            <div class="col-md-6 form-group">
+                                <label>E-mail</label>
+                                <input class="form-control" type="text" placeholder="example@email.com" name="email">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Mobile No</label>
+                                <input class="form-control" type="text" placeholder="+123 456 789" name="mobile">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Address</label>
+                                <input class="form-control" type="text" placeholder="123 Street" name="address">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label>Pincode</label>
+                                <input class="form-control" type="text" placeholder="123 Street" name="pincode">
+                            </div>
+                            <input type="text" name="userId" value="<%= user._id%>" hidden>
+                        </div>
+                    </div>
+
+
 
                 </div>
             </div>
@@ -119,19 +161,59 @@
     </form>
 </div>
 <!-- Checkout End -->
-
 <script>
-    $("#checkout-form").submit((e) => {
-        e.preventDefault()
-        $.ajax({
-            url: '/place-order',
-            method: 'post',
-            data: $('#checkout-form').serialize(),
-            success: (response) => {
-                if (response.status) {
-                    location.href = '/order-success'
-                }
+    $(document).ready(function () {
+        $('input[name="addressGroup"]').change(function () {
+            var selectedAddress = $('input[name="addressGroup"]:checked').val();
+            $('.address-fields').hide();
+            $('#' + selectedAddress + 'Fields').show();
+        });
+    });
+</script>
+<script>
+  $("#checkout-form").submit((e) => {
+    e.preventDefault();
+
+    // Get the selected address group
+    var selectedAddressGroup = $('input[name="addressGroup"]:checked').val();
+
+    // Append the selected address group to the serialized form data
+    var formData = 'selectedAddressGroup=' + selectedAddressGroup;
+
+    if (selectedAddressGroup === 'address1') {
+        formData += '&' +
+            'name=' + $('#address1Fields input[name="name"]').val() +
+            '&email=' + $('#address1Fields input[name="email"]').val() +
+            '&mobile=' + $('#address1Fields input[name="mobile"]').val() +
+            '&address=' + $('#address1Fields input[name="address"]').val() +
+            '&pincode=' + $('#address1Fields input[name="pincode"]').val()+
+            '&userId=' + $('#address1Fields input[name="userId"]').val();
+            
+    } else if (selectedAddressGroup === 'address2') {
+        formData += '&' +
+            'name=' + $('#address2Fields input[name="name"]').val() +
+            '&email=' + $('#address2Fields input[name="email"]').val() +
+            '&mobile=' + $('#address2Fields input[name="mobile"]').val() +
+            '&address=' + $('#address2Fields input[name="address"]').val() +
+            '&pincode=' + $('#address2Fields input[name="pincode"]').val()+
+            '&userId=' + $('#address2Fields input[name="userId"]').val();
+            
+
+    }
+    formData += '&' + 'payment=' + $('input[name="payment"]:checked').val();
+
+    $.ajax({
+        url: '/place-order',
+        method: 'post',
+        data: formData,
+        success: (response) => {
+            if (response.status) {
+                location.href = '/order-success?orderId=' + response.orderId;
             }
-        })
-    })
+        }
+    });
+});
+
+
+
 </script>

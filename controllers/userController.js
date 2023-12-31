@@ -10,6 +10,7 @@ const UserOTPVerification = require("../model/userOTPVerificationModel");
 const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
+const moment = require("moment");
 
 const sendVerifyEmail = async (name, email, user_id, response) => {
   try {
@@ -122,14 +123,12 @@ const registerUser = async (req, res, next) => {
     if (result.status === "error") {
       res.render("user/signup-user", { errorMessage: result.message });
     } else {
-      // User registered successfully, send verification email
       console.log(result.name);
       console.log(result.email);
       sendVerifyEmail(result.name, result.email, result.Id, res);
       // res.render("user/enter-otp", { message: "Please check your email for otp" });
     }
   } catch (error) {
-    // Handle other errors
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
@@ -150,17 +149,17 @@ const validateLogin = (req, res, next) => {
 
 const logOut = (req, res, next) => {
   req.session.destroy();
-  res.redirect("/");
+  res.redirect("/login");
 };
 
 const verifyEmail = async (req, res) => {
   try {
-    let userId = req.query.id;
+    const userId = req.query.id;
     userHelpers.verifyEmail(userId).then((response) => {
       res.redirect("/login");
     });
   } catch (error) {
-    console.log(error.message); // Change 'err' to 'error'
+    console.log(error.message);
   }
 };
 
@@ -195,24 +194,28 @@ const addNewPassword = (req, res) => {
 };
 
 const getCart = async (req, res) => {
-  let user = req.session.user;
+  const user = req.session.user;
   let cartItems = await userHelpers.getCartProducts(req.session.user._id);
   let totalValue = await userHelpers.getTotalAmount(req.session.user._id);
   console.log("cartItems: ", cartItems);
   cartItems.forEach((cartItem) => {
-    // Access the product property of each cart item
     console.log("Images are:", cartItem.product.images);
   });
   res.render("user/cart", { user, cartItems, totalValue });
 };
 const addToCart = (req, res) => {
-  let user = req.session.user;
+  const user = req.session.user;
   console.log("user:", user);
   console.log("api called");
 
-  userHelpers.addToCart(req.params.id, req.session.user._id).then(() => {
-    res.json({ status: true });
-  });
+  if (req.session.authorized) {
+    userHelpers.addToCart(req.params.id, req.session.user._id).then(() => {
+      res.json({ status: true, redirectToLogin: false });
+    });
+  } else {
+    // Return status with information to redirect to login
+    res.json({ status: false, redirectToLogin: true });
+  }
 };
 
 const changeProductQuantity = (req, res) => {
@@ -224,45 +227,94 @@ const changeProductQuantity = (req, res) => {
 };
 
 const placeOrder = async (req, res) => {
-  let user = req.session.user;
+  const user = req.session.user;
   req.session.authorized = true;
   const isAuthorized = req.session.authorized;
   let total = await userHelpers.getTotalAmount(req.session.user._id);
-  res.render("user/order", { total, user, isAuthorized });
+  let userDetails = await userHelpers.getUserDetails(req.session.user._id);
+  res.render("user/order", { total, user, isAuthorized, userDetails });
 };
 
 const checkout = async (req, res) => {
-  let products = await userHelpers.getCartProductList(req.body.userId);
-  let totalPrice = await userHelpers.getTotalAmount(req.body.userId);
-  userHelpers.placeOrder(req.body, products, totalPrice).then((response) => {
-    res.json({ status: true });
-  });
-  if (req.body.payment == "COD") {
+  try {
+    let selectedAddressGroup = req.body;
+    console.log("payment is : ",req.body.payment);
+    let products = await userHelpers.getCartProductList(req.body.userId);
+    let totalPrice = await userHelpers.getTotalAmount(req.body.userId);
+    
+    
+
+    userHelpers
+      .placeOrder(selectedAddressGroup, products, totalPrice)
+      .then((orderId) => {
+        console.log("Placed Order ID:", orderId);
+        res.json({ status: true, orderId });
+      })
+      .catch((error) => {
+        console.error("Error placing order:", error);
+        res.json({ status: false, error: "Error placing order" });
+      });
+
+    if (req.body.payment == "COD") {
+
+    }
+    console.log("delivery detailsis : ",req.body);
+  } catch (error) {
+    console.error("Error in checkout:", error);
+    res.json({ status: false, error: "Error in checkout" });
   }
-  console.log(req.body);
 };
 
 const orderSuccess = async (req, res) => {
-  let user = req.session.user;
-  let orders = await userHelpers.getUserOrders(req.session.user._id);
-  res.render("user/order-success", { user, orders });
+  const orderId = req.query.orderId;
+  const user = req.session.user;
+  console.log("order id is : ", orderId);
+  // let products = await userHelpers.getOrderedProducts(orderId);
+  // console.log("orderes products are: " + products);
+  res.render("user/order-success-page", { user, orderId });
+  // const user = req.session.user;
+  // let orders = await userHelpers.getUserOrders(req.session.user._id);
+  // res.render("user/order-success", { user, orders });
 };
+
 const getOrderedProducts = async (req, res) => {
-  let user = req.session.user;
-  console.log(req.params.id);
-  let products = await userHelpers.getOrderedProducts(req.params.id);
-  console.log("orderes products are: " + products);
-  res.render("user/view-order-products", { user, products });
+  try {
+    const user = req.session.user;
+    const orderId = req.params.id;
+    console.log("order id is : ", orderId);
+
+    let orderDetails = await userHelpers.getOrderedProducts(orderId);
+
+    let products = orderDetails.products;
+    let totalAmount = orderDetails.totalAmount;
+
+    console.log("Products is ", products);
+    console.log("Total Amount is ", totalAmount);
+
+    res.render("user/view-order-products", { user, products, totalAmount });
+  } catch (error) {
+    console.error("Error fetching ordered products:", error);
+    res.redirect("/");
+  }
+};
+const getOrderedProductList = async (req, res) => {
+  const user = req.session.user;
+  // console.log(req.params.id);
+  // let products = await userHelpers.getOrderedProducts(req.params.id);
+  // console.log("orderes products are: " + products);
+  // res.render("user/view-order-products", { user, products });
+  let orders = await userHelpers.getUserOrders(req.session.user._id);
+  res.render("user/order-list", { user, orders, moment });
 };
 const getProfile = async (req, res) => {
-  let user = req.session.user;
+  const user = req.session.user;
   let userDetails = await userHelpers.getUserDetails(req.session.user._id);
 
   res.render("user/profile", { user, userDetails });
 };
 
 const editProfile = async (req, res) => {
-  let user = req.session.user;
+  const user = req.session.user;
   console.log(req.params.id);
   let userDetails = await userHelpers.getUserDetails(req.params.id);
   console.log(userDetails);
@@ -271,7 +323,7 @@ const editProfile = async (req, res) => {
 
 const changeProfile = async (req, res) => {
   try {
-    let user = req.session.user;
+    const user = req.session.user;
     console.log(req.body);
     await userHelpers
       .changeProfile(req.params.id, req.body)
@@ -382,7 +434,7 @@ module.exports = {
   placeOrder,
   checkout,
   orderSuccess,
-  getOrderedProducts,
+  getOrderedProductList,
   getProfile,
   editProfile,
   changeProfile,
@@ -392,4 +444,5 @@ module.exports = {
   verifyOTPForgot,
   resendOTP,
   resendOTPForgot,
+  getOrderedProducts,
 };

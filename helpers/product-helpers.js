@@ -259,7 +259,33 @@ module.exports = {
         .collection(collection.ORDER_COLLECTION)
         .updateOne(
           { _id: new objectId(orderId) },
-          { $set: { status: "cancelled" } }
+          { $set: { status: "Cancelled" } }
+        )
+        .then((response) => {
+          resolve(response);
+        });
+    });
+  },
+  deliveredOrder: (orderId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .updateOne(
+          { _id: new objectId(orderId) },
+          { $set: { status: "Delivered" } }
+        )
+        .then((response) => {
+          resolve(response);
+        });
+    });
+  },
+  shippedOrder: (orderId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .updateOne(
+          { _id: new objectId(orderId) },
+          { $set: { status: "Shipped" } }
         )
         .then((response) => {
           resolve(response);

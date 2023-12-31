@@ -1,4 +1,5 @@
 const express = require("express");
+
 const router = express.Router();
 const { response } = require("../app");
 const verifyLogin = require("../middlewares/verifyLogin.js");
@@ -19,7 +20,7 @@ const {
   placeOrder,
   checkout,
   orderSuccess,
-  getOrderedProducts,
+  getOrderedProductList,
   getProfile,
   editProfile,
   changeProfile,
@@ -28,6 +29,7 @@ const {
   verifyOTP,
   verifyOTPForgot,
   resendOTP,
+  getOrderedProducts,
   resendOTPForgot,
 } = require("../controllers/userController.js");
 const {
@@ -56,7 +58,7 @@ router.route("/signup").get(signupUser).post(registerUser);
 router.get("/logout", logOut);
 router.get("/verify", verifyEmail);
 
-router.get("/details/:id", productDetails);
+router.get("/details/:id",verifyLogin, productDetails);
 
 router.get("/forgot-password", forgotPassword);
 
@@ -67,23 +69,24 @@ router.post("/admin/resetPassword", addNewPassword);
 
 router.get("/cart", verifyLogin, getCart);
 
-router.get("/add-to-cart/:id", addToCart);
+router.get("/add-to-cart/:id",verifyLogin,addToCart);
 
-router.post("/change-product-quantity", changeProductQuantity);
+router.post("/change-product-quantity",verifyLogin, changeProductQuantity);
 
 router.get("/place-order", verifyLogin, placeOrder);
 
-router.post("/place-order", checkout);
+router.post("/place-order",checkout);
 
 router.get("/order-success", verifyLogin, orderSuccess);
 
-router.get("/view-ordered-products/:id", getOrderedProducts);
+router.get("/view-ordered-product-list/:id",verifyLogin, getOrderedProductList);
+router.get("/view-ordered-products/:id",verifyLogin,getOrderedProducts)
 
 router.get("/profile", verifyLogin, getProfile);
 
-router.get("/edit-profile/:id", editProfile);
+router.get("/edit-profile/:id", verifyLogin,editProfile);
 
-router.post("/edit-profile/:id", changeProfile);
+router.post("/edit-profile/:id", verifyLogin,changeProfile);
 
 router.get("/enter-otp", enterOTP);
 router.get("/enter-otp-forgot", enterOTPForgot);

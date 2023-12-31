@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
 const db = require("./config/connection");
-const bodyParser = require("body-parser");
+
 const middleware = require("./middlewares/middleware");
 const flash = require("express-flash-message");
 const expressLayouts = require("express-ejs-layouts");

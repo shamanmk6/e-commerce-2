@@ -1,5 +1,5 @@
 const isAdmin=(req,res,next)=>{
-    if(req.session.authorized){
+    if(req.session.admin){
        next()
     }else{
        res.redirect("/admin")

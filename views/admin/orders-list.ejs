@@ -12,13 +12,16 @@
                         <table class="table table-striped table-bordered zero-configuration mt-3">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Date</th>
-                                    <th>Mobile</th>
-                                    <th>Adress</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
-                                    <th>Cancel</th>
+                                    <th class="text-center">User</th>
+                                    <th class="text-center">Order Date</th>
+                                    <th class="text-center">Mobile</th>
+                                    <th class="text-center">Delivery Adress</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Shipped</th>
+                                    <th class="text-center">Delivered</th>
+                                    <th class="text-center">Cancel</th>
+                                    <th class="text-center">Ordered Items</th>
 
 
 
@@ -31,48 +34,51 @@
                                             <%= order.userName%>
                                         </td>
                                         <td>
-                                            <%= order.date %>
+                                            <%= moment(order.date).format('MMM Do YY') %>
                                         </td>
                                         <td>
                                             <%= order.deliveryDetails.mobile %>
                                         </td>
                                         <td>
-                                            <%= order.deliveryDetails.address %>
+                                            <strong>Name:</strong> <%= order.deliveryDetails.name %><br>
+                                            <strong>Delivery Address:</strong><%= order.deliveryDetails.address %><br>
+                                            <strong> Pincode:</strong><%= order.deliveryDetails.pincode %><br>
+                                            <strong> Mobile:</strong><%= order.deliveryDetails.mobile %><br>
                                         </td>
                                         <td>
                                             ₹<%= order.totalAmount %>.00
                                         </td>
-                                        <td>
+                                        <td class="<%= order.status === 'Delivered' ? 'text-success' : (order.status === 'Shipped' ? 'text-warning' : (order.status === 'Cancelled' ? 'text-danger' : '')) %>">
                                             <%= order.status %>
+                                        </td>
+                                        
+                                        <td>
+                                            <a href="/admin/shipped-order/<%= order._id %>">
+                                                <button type="button" class="btn btn-success">Shipped</button>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/delivered-order/<%= order._id %>">
+                                                <button type="button" class="btn btn-success">Delivered</button>
+                                            </a>
                                         </td>
                                         <td>
                                             <a href="/admin/cancel-order/<%= order._id %>">
-                                                <button type="button" class="btn btn-danger">Cancel</button>
+                                                <button type="button" class="btn btn-success">Cancel</button>
                                             </a>
                                         </td>
-
+                                        <td>
+                                            <a href="/admin/ordered-items/<%= order._id %>">
+                                                <button type="button" class="btn btn-primary">Ordered Items</button>
+                                            </a>
+                                        </td>
 
 
                                     </tr>
                                     <% }) %>
 
                             </tbody>
-
-
-
-                            <tfoot>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Category</th>
-                                    <th>Quantity</th>
-                                    <th>Description</th>
-                                    <th>Image</th>
-
-
-                                </tr>
-                            </tfoot>
-                        </table>
+                         </table>
                     </div>
                 </div>
             </div>
