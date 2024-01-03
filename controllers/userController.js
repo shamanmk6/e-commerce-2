@@ -65,7 +65,7 @@ const sendResetEmail = async (user, response) => {
       requireTLS: true,
       auth: {
         user: "mohammedshaman83@gmail.com",
-        pass: "hvgp fdiy ynga rxrr",
+        pass: SMTP_PASS,
       },
     });
 
