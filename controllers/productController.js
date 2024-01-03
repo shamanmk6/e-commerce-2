@@ -110,14 +110,16 @@ const restoreProduct = (req, res, next) => {
     });
 };
 const editProduct = async (req, res, next) => {
+  const admin=req.session.admin
   productHelpers.getAllCategories().then(async (categories) => {
     let product = await productHelpers.getProductDetails(req.params.id);
     console.log(product);
-    res.render("admin/edit-products", { admin: true, product, categories });
+    res.render("admin/edit-products", { admin, product, categories });
   });
 };
 
 const updateProduct = (req, res, next) => {
+  const admin=req.session.admin
   console.log(req.params.id);
   let id = req.params.id;
   upload.array("image")(req, res, async (err) => {
@@ -137,7 +139,7 @@ const updateProduct = (req, res, next) => {
         req.body,
         req.files.map((file) => file.filename)
       );
-      res.redirect("/admin");
+      res.redirect("/admin/view-products");
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
