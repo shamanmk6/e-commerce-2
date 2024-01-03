@@ -12,6 +12,9 @@ const {
   cancelOrder,
   verifyAdminLogin,
   adminLogout,
+  deliveredOrder,
+  shippedOrder,
+  
 } = require("../controllers/adminController");
 
 const {
@@ -23,6 +26,7 @@ const {
   restoreProduct,
   editProduct,
   updateProduct,
+  orderedItems,
 } = require("../controllers/productController");
 
 /* GET home page. */
@@ -31,18 +35,18 @@ router.get("/view-products", isAdmin, getProducts);
 router.post("/login", verifyAdminLogin);
 router.get("/logout", adminLogout);
 
-router.get("/add-products", addProducts);
-router.post("/add-products", productAdding);
+router.get("/add-products",isAdmin, addProducts);
+router.post("/add-products",isAdmin, productAdding);
 
-router.get("/delete-product/:id", deleteProduct);
-router.get("/restore-product/:id", restoreProduct);
+router.get("/delete-product/:id",isAdmin, deleteProduct);
+router.get("/restore-product/:id",isAdmin, restoreProduct);
 
 router.route("/edit-product/:id").get(editProduct).post(updateProduct);
 
 router.get("/users", isAdmin, getUsers);
 
-router.get("/block-user/:id", blockUser);
-router.get("/unblock-user/:id", unBlockUser);
+router.get("/block-user/:id",isAdmin, blockUser);
+router.get("/unblock-user/:id",isAdmin, unBlockUser);
 
 router.get("/category", isAdmin, category);
 
@@ -50,6 +54,11 @@ router.route("/add-category").get(addCategory).post(categoryAdding);
 
 router.get("/orders", isAdmin, getOrders);
 
-router.get("/cancel-order/:id", cancelOrder);
+router.get("/cancel-order/:id",isAdmin, cancelOrder);
 
+router.get("/delivered-order/:id",isAdmin, deliveredOrder);
+
+router.get("/shipped-order/:id",isAdmin, shippedOrder);
+
+router.get("/ordered-items/:id",isAdmin, orderedItems);
 module.exports = router;

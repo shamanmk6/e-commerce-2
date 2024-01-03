@@ -1,15 +1,17 @@
 const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
+const moment = require("moment");
 
 const getUsers = (req, res, next) => {
   const admin = req.session.admin;
+  console.log("admin is: ",admin);
   userHelpers.getAllUsers().then((users) => {
     res.render("admin/view-users", { admin, users });
   });
 };
 
 const blockUser = (req, res, next) => {
-  let userId = req.params.id;
+  const userId = req.params.id;
   console.log(userId);
   userHelpers
     .blockUser(userId)
@@ -24,7 +26,7 @@ const blockUser = (req, res, next) => {
     });
 };
 const unBlockUser = (req, res, next) => {
-  let userId = req.params.id;
+  const userId = req.params.id;
   console.log(userId);
   userHelpers
     .unBlockUser(userId)
@@ -62,14 +64,11 @@ const categoryAdding = async (req, res) => {
       category: req.body.category,
     };
 
-    // Call categoryAdding function and wait for the result
     const result = await userHelpers.categoryAdding(categoryData);
 
     if (result.success) {
-      // Category added successfully
       res.redirect("/admin/category");
     } else {
-      // Category addition failed, display the message in the EJS file
       res.render("admin/add-category", { error: result.message, admin });
     }
   } catch (error) {
@@ -82,7 +81,7 @@ const getOrders = async (req, res) => {
   const admin = req.session.admin;
   let orders = await productHelpers.getAllOrders();
   console.log(orders);
-  res.render("admin/orders-list", { admin, orders });
+  res.render("admin/orders-list", { admin, orders ,moment });
 };
 
 const cancelOrder = async (req, res) => {
@@ -92,14 +91,28 @@ const cancelOrder = async (req, res) => {
     res.redirect("/admin/orders");
   });
 };
+const deliveredOrder = async (req, res) => {
+  console.log(req.params.id);
+  let orderId = req.params.id;
+  productHelpers.deliveredOrder(orderId).then((response) => {
+    res.redirect("/admin/orders");
+  });
+};
+const shippedOrder = async (req, res) => {
+  console.log(req.params.id);
+  let orderId = req.params.id;
+  productHelpers.shippedOrder(orderId).then((response) => {
+    res.redirect("/admin/orders");
+  });
+};
 const verifyAdminLogin = (req, res) => {
   const { email, password } = req.body;
   console.log("admin details is: " + email + password);
   productHelpers.doAdminLogin(email, password).then((response) => {
     if (response.status) {
-      req.session.authorized = true;
-      req.session.admin = response.admin;
-      res.redirect("/admin/view-products");
+      req.session.admin = true;
+      const admin=req.session.admin
+      res.redirect("/admin/view-products?admin=" + admin);
     } else {
       req.session.loginErr = response.message || "Invalid Username or password";
       res.redirect("/admin");
@@ -121,4 +134,6 @@ module.exports = {
   cancelOrder,
   verifyAdminLogin,
   adminLogout,
+  deliveredOrder,
+  shippedOrder,
 };

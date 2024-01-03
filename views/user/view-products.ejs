@@ -276,15 +276,35 @@
 </main>
 
 <script>
-    function addToCart(proId) {
-        $.ajax({
-            url: "/add-to-cart/" + proId,
-            method: "get",
-            success: (response) => {
-                alert(response)
-            }
-        })
-    }
+    //  function addToCart(proId) {
+    //     console.log("addToCart function called");
+    //     $.ajax({
+    //         url: "/add-to-cart/" + proId,
+    //         method: "get",
+    //         complete: function(xhr, textStatus) {
+    //             if (xhr.status === 302) {
+    //                 // Redirect to the login page
+    //                 console.log("hello");
+    //                 window.location.href = "/login";
+    //             } else if (xhr.status === 200) {
+    //                 // Request was successful
+    //                 var response = xhr.responseText;
+    //                 try {
+    //                     response = JSON.parse(response);
+    //                     if (response.status) {
+    //                         alert("Product added to cart successfully!");
+    //                     } else {
+    //                         alert(response.message);
+    //                     }
+    //                 } catch (e) {
+    //                     console.error("Error parsing JSON response: " + e);
+    //                 }
+    //             } else {
+    //                 alert("Error: " + xhr.status);
+    //             }
+    //         }
+    //     });
+    // }
 
     history.pushState(null, null, location.href);
     window.onpopstate = function (event) {

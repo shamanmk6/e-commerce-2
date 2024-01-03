@@ -53,9 +53,9 @@ const productAdding = (req, res, next) => {
       }
 
       // Process each image
-      images.forEach((image) => {
-        // Your file processing logic here
-      });
+      // images.forEach((image) => {
+        
+      // });
 
       res.redirect("/admin/add-products");
     } catch (error) {
@@ -73,7 +73,7 @@ const productAdding = (req, res, next) => {
 //   });
 // };
 const deleteProduct = (req, res, next) => {
-  let proId = req.params.id;
+  const proId = req.params.id;
   console.log(proId);
   productHelpers
     .deleteProduct(proId)
@@ -95,7 +95,7 @@ const deleteProduct = (req, res, next) => {
 //   });
 // };
 const restoreProduct = (req, res, next) => {
-  let proId = req.params.id;
+  const proId = req.params.id;
   console.log(proId);
   productHelpers
     .restoreProduct(proId)
@@ -146,7 +146,7 @@ const updateProduct = (req, res, next) => {
 };
 const viewProducts = async (req, res, next) => {
   try {
-    let user = req.session.user;
+    const user = req.session.user;
     console.log(user);
 
     let cartCount = 0;
@@ -162,10 +162,10 @@ const viewProducts = async (req, res, next) => {
 
     const products = await productHelpers.getAllProducts();
 
-    // Ensure that cartCount is available to the view
+    
     res.locals.cartCount = cartCount;
 
-    // Now render the view after both asynchronous operations are complete
+    
     res.render("user/view-products", {
       products,
       admin: false,
@@ -174,31 +174,53 @@ const viewProducts = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
-    // Handle the error appropriately, e.g., by passing it to the next middleware
+    
     next(error);
   }
 };
 const productDetails = async (req, res, next) => {
-  let user = req.session.user;
+  const user = req.session.user;
   console.log("user:", user);
   try {
-    let proId = req.params.id;
-    console.log("proId:", proId); // Add this line for debugging
+    const proId = req.params.id;
+    console.log("proId:", proId); 
     let product = await userHelpers.productDetails(proId);
-    console.log("product:", product); // Add this line for debugging
+    console.log("product:", product); 
     if (product && product.images && Array.isArray(product.images)) {
       res.render("user/product-details", { admin: false, product, user });
     } else {
-      // Handle the case where the product data is not as expected
+      
       console.error("Invalid product data:", product);
-      // You can redirect or render an error page here
+      
       res.status(404).send("Product not found");
     }
   } catch (error) {
     console.error(error);
-    next(error); // Pass the error to the next middleware or error handler
+    next(error); 
   }
 };
+
+const orderedItems = async (req, res, next) => {
+  try {
+    
+    const orderId = req.params.id;
+    console.log("order id is : ", orderId);
+
+    let orderDetails = await userHelpers.getOrderedProducts(orderId);
+
+    let products = orderDetails.products;
+    let totalAmount = orderDetails.totalAmount;
+
+    console.log("Products is ", products);
+    console.log("Total Amount is ", totalAmount);
+
+    res.render("admin/view-order-products", {admin:true, products, totalAmount });
+  } catch (error) {
+    console.error("Error fetching ordered products:", error);
+    res.redirect("/");
+  }
+};
+
 
 module.exports = {
   getProducts,
@@ -211,4 +233,5 @@ module.exports = {
   productDetails,
   viewProducts,
   adminLogin,
+  orderedItems,
 };

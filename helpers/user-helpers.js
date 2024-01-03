@@ -486,6 +486,7 @@ module.exports = {
       let status = order.payment === "COD" ? "placed" : "pending";
       let orderObj = {
         deliveryDetails: {
+          name:order.name,
           mobile: order.mobile,
           address: order.address,
           pincode: order.pincode,
@@ -501,10 +502,11 @@ module.exports = {
         .collection(collection.ORDER_COLLECTION)
         .insertOne(orderObj)
         .then((response) => {
+          const orderId = new ObjectId(response.insertedId)
           db.getDatabase()
             .collection(collection.CART_COLLECTION)
             .deleteOne({ user: new objectId(order.userId) });
-          resolve();
+          resolve(orderId);
         });
     });
   },
@@ -535,42 +537,55 @@ module.exports = {
   },
   getOrderedProducts: (orderId) => {
     return new Promise(async (resolve, reject) => {
-      let orderItems = await db
-        .getDatabase()
-        .collection(collection.ORDER_COLLECTION)
-        .aggregate([
-          {
-            $match: { _id: new objectId(orderId) },
-          },
-          {
-            $unwind: "$products",
-          },
-          {
-            $project: {
-              item: "$products.item",
-              quantity: "$products.quantity",
+      try {
+        let orderItems = await db
+          .getDatabase()
+          .collection(collection.ORDER_COLLECTION)
+          .aggregate([
+            {
+              $match: { _id: new objectId(orderId) },
             },
-          },
-          {
-            $lookup: {
-              from: collection.PRODUCT_COLLECTION,
-              localField: "item",
-              foreignField: "_id",
-              as: "product",
+            {
+              $unwind: "$products",
             },
-          },
-          {
-            $project: {
-              item: 1,
-              quantity: 1,
-              product: { $arrayElemAt: ["$product", 0] },
+            {
+              $lookup: {
+                from: collection.PRODUCT_COLLECTION,
+                localField: "products.item",
+                foreignField: "_id",
+                as: "product",
+              },
             },
-          },
-        ])
-
-        .toArray();
-      console.log(orderItems);
-      resolve(orderItems);
+            {
+              $project: {
+                item: "$products.item",
+                quantity: "$products.quantity",
+                totalAmount: "$totalAmount",
+                product: { $arrayElemAt: ["$product", 0] },
+              },
+            },
+          ])
+          .toArray();
+  
+        if (orderItems.length > 0) {
+         
+          let totalAmount = orderItems[0].totalAmount;
+  
+          
+          let products = orderItems.map((item) => ({
+            item: item.item,
+            quantity: item.quantity,
+            product: item.product,
+          }));
+  
+          resolve({ products, totalAmount });
+        } else {
+          resolve({ products: [], totalAmount: 0 });
+        }
+      } catch (error) {
+        console.error("Error in aggregation pipeline:", error);
+        reject(error);
+      }
     });
   },
   getUserDetails: (userId) => {
