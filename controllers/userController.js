@@ -11,7 +11,7 @@ const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
-const SMTP_PASS =process.env.SMTP_PASS
+const SMTP_PASS =process.env.SMTP_PASSWORD
 
 const sendVerifyEmail = async (name, email, user_id, response) => {
   try {
@@ -65,7 +65,7 @@ const sendResetEmail = async (user, response) => {
       requireTLS: true,
       auth: {
         user: "mohammedshaman83@gmail.com",
-        pass: "hvgp fdiy ynga rxrr",
+        pass: SMTP_PASS,
       },
     });
 
