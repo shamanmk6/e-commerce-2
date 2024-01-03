@@ -88,21 +88,21 @@ const cancelOrder = async (req, res) => {
   console.log(req.params.id);
   let orderId = req.params.id;
   productHelpers.cancelOrder(orderId).then((response) => {
-    res.redirect("/admin/orders");
+    res.json({status:true})
   });
 };
 const deliveredOrder = async (req, res) => {
   console.log(req.params.id);
   let orderId = req.params.id;
   productHelpers.deliveredOrder(orderId).then((response) => {
-    res.redirect("/admin/orders");
+    res.json({status:true})
   });
 };
 const shippedOrder = async (req, res) => {
   console.log(req.params.id);
   let orderId = req.params.id;
   productHelpers.shippedOrder(orderId).then((response) => {
-    res.redirect("/admin/orders");
+    res.json({status:true})
   });
 };
 const verifyAdminLogin = (req, res) => {
