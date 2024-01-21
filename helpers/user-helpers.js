@@ -4,10 +4,18 @@ const bcrypt = require("bcrypt");
 const objectId = require("mongodb").ObjectId;
 const User = require("../model/userModel");
 const Category = require("../model/categoryModel");
+const Coupon = require("../model/couponModel");
 const UserOTPVerification = require("../model/userOTPVerificationModel");
 const nodeMailer = require("nodemailer");
 const { response } = require("../app");
 const { ObjectId } = require("mongodb");
+const Razorpay = require("razorpay");
+const { resolve } = require("path");
+const RAZORPAY_SECRET = process.env.RAZORPAY_SECRET;
+var instance = new Razorpay({
+  key_id: "rzp_test_pwhvE482E5y8F4",
+  key_secret: "yEURCf7rlGOsDvHhLOE6uFqm",
+});
 
 module.exports = {
   doSignup: (userData) => {
@@ -473,11 +481,39 @@ module.exports = {
 
         .toArray();
       if (total.length > 0 && total[0].total !== undefined) {
-        console.log(total[0].total);
+        console.log("total is:", total[0].total);
+        await db
+          .getDatabase()
+          .collection(collection.CART_COLLECTION)
+          .updateOne(
+            { user: new objectId(userId) },
+            { $set: { totalAmount: total[0].total } }
+          );
         resolve(total[0].total);
       } else {
         console.log("Total not found or undefined");
+        await db
+          .getDatabase()
+          .collection(collection.CART_COLLECTION)
+          .updateOne(
+            { user: new objectId(userId) },
+            { $set: { totalAmount: 0 } }
+          );
         resolve("Cart is Empty");
+      }
+    });
+  },
+  totalAmount: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      const cart = await db
+        .getDatabase()
+        .collection(collection.CART_COLLECTION)
+        .findOne({ user: new objectId(userId) });
+      if (cart && cart.totalAmount !== undefined) {
+        console.log("Cart amount is: ", cart.totalAmount);
+        resolve(cart.totalAmount);
+      } else {
+        resolve(0);
       }
     });
   },
@@ -486,7 +522,7 @@ module.exports = {
       let status = order.payment === "COD" ? "placed" : "pending";
       let orderObj = {
         deliveryDetails: {
-          name:order.name,
+          name: order.name,
           mobile: order.mobile,
           address: order.address,
           pincode: order.pincode,
@@ -502,7 +538,7 @@ module.exports = {
         .collection(collection.ORDER_COLLECTION)
         .insertOne(orderObj)
         .then((response) => {
-          const orderId = new ObjectId(response.insertedId)
+          const orderId = new ObjectId(response.insertedId);
           db.getDatabase()
             .collection(collection.CART_COLLECTION)
             .deleteOne({ user: new objectId(order.userId) });
@@ -566,18 +602,16 @@ module.exports = {
             },
           ])
           .toArray();
-  
+
         if (orderItems.length > 0) {
-         
           let totalAmount = orderItems[0].totalAmount;
-  
-          
+
           let products = orderItems.map((item) => ({
             item: item.item,
             quantity: item.quantity,
             product: item.product,
           }));
-  
+
           resolve({ products, totalAmount });
         } else {
           resolve({ products: [], totalAmount: 0 });
@@ -683,6 +717,195 @@ module.exports = {
         console.error("Error in otpVerify:", error);
         reject(error);
       }
+    });
+  },
+  generateRazorpay: (orderId, totalPrice) => {
+    return new Promise((resolve, reject) => {
+      var options = {
+        amount: totalPrice * 100, // amount in the smallest currency unit
+        currency: "INR",
+        receipt: "" + orderId,
+      };
+      instance.orders.create(options, function (err, order) {
+        console.log("payment is: ", order);
+        resolve(order);
+      });
+    });
+  },
+  verifyPayment: (paymentDetails) => {
+    return new Promise((resolve, reject) => {
+      const crypto = require("crypto");
+
+      let hmac = crypto.createHmac("sha256", RAZORPAY_SECRET);
+
+      // Use the correct property names without quotes and square brackets
+      hmac.update(
+        paymentDetails["payment[razorpay_order_id]"] +
+          "|" +
+          paymentDetails["payment[razorpay_payment_id]"]
+      );
+
+      let calculatedSignature = hmac.digest("hex");
+
+      // Compare calculatedSignature with the provided signature
+      if (
+        calculatedSignature === paymentDetails["payment[razorpay_signature]"]
+      ) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  },
+  changePaymentStatus: (orderId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .updateOne(
+          { _id: new objectId(orderId) },
+          {
+            $set: {
+              status: "placed",
+            },
+          }
+        )
+        .then(() => {
+          resolve();
+        });
+    });
+  },
+  getCoupons: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let coupons = await db
+          .getDatabase()
+          .collection(collection.COUPON_COLLECTION)
+          .find()
+          .toArray();
+        resolve(coupons);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  couponAdding: (couponData) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const existingCoupon = await db
+          .getDatabase()
+          .collection(collection.COUPON_COLLECTION)
+          .findOne({
+            name: { $regex: new RegExp(`^${couponData.name}$`, "i") },
+          });
+
+        if (existingCoupon) {
+          resolve({ success: false, message: "Coupon must be unique." });
+          return;
+        }
+
+        // If validations pass, proceed with insertion
+        const newCoupon = new Coupon({
+          name: couponData.name,
+          expiry: couponData.expiry,
+          discount: couponData.discount,
+        });
+
+        let data = await db
+          .getDatabase()
+          .collection(collection.COUPON_COLLECTION)
+          .insertOne(newCoupon);
+
+        resolve({ success: true, message: "Coupon added successfully." });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  validCoupon: (coupon, userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const couponDocument = await db
+          .getDatabase()
+          .collection(collection.COUPON_COLLECTION)
+          .findOne({ name: coupon });
+
+        if (!couponDocument) {
+          resolve({ valid: false, message: "Invalid Coupon" });
+          return;
+        }
+
+        const user = await db
+          .getDatabase()
+          .collection(collection.USER_COLLECTION)
+          .findOne({
+            _id: new objectId(userId),
+            appliedCoupons: { $regex: new RegExp(coupon, "i") },
+          });
+
+        if (user && user.appliedCoupons) {
+          resolve({ valid: false, message: "Coupon already used" });
+          return;
+        }
+
+        const currentDate = new Date();
+        console.log("current date is: ", currentDate);
+        if (couponDocument.expiry && couponDocument.expiry < currentDate) {
+          resolve({ valid: false, message: "Coupon expired" });
+          return;
+        }
+
+        await db
+          .getDatabase()
+          .collection(collection.USER_COLLECTION)
+          .updateOne(
+            { _id: new objectId(userId) },
+            { $addToSet: { appliedCoupons: coupon } }
+          );
+
+        resolve({ valid: true, couponDocument });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  updateCartTotal: (userId, newTotal) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.CART_COLLECTION)
+        .updateOne(
+          { user: new objectId(userId) },
+          { $set: { totalAmount: newTotal } }
+        )
+        .then(() => {
+          resolve();
+        });
+    });
+  },
+  getCoupon: (couponId) => {
+    return new Promise((resolve, reject) => {
+
+      db.getDatabase().collection(collection.COUPON_COLLECTION).findOne({_id:new objectId(couponId)}).then((coupon)=>{
+          resolve(coupon);
+      })
+    });
+  },
+  updateCoupon: (details, couponId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.COUPON_COLLECTION)
+        .updateOne(
+          { _id: new objectId(couponId) },
+          {
+            $set: {
+              name: details.name,
+              expiry: details.expiry,
+              discount: details.discount,
+            },
+          }
+        )
+        .then(() => {
+          resolve();
+        });
     });
   },
 };

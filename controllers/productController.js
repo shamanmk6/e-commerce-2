@@ -15,9 +15,6 @@ const upload = require("../middlewares/upload");
 
 // const upload = multer({ storage: storage });
 
-const adminLogin = (req, res) => {
-  res.render("admin/admin-login", { admin: true });
-};
 const getProducts = (req, res, next) => {
   const admin = req.session.admin;
   console.log(admin);
@@ -163,6 +160,8 @@ const viewProducts = async (req, res, next) => {
     }
 
     const products = await productHelpers.getAllProducts();
+    const categories = await productHelpers.getAllCategories();
+    console.log("categories is: ",categories);
 
     
     res.locals.cartCount = cartCount;
@@ -173,6 +172,7 @@ const viewProducts = async (req, res, next) => {
       admin: false,
       user,
       cartCount,
+      categories
     });
   } catch (error) {
     console.error(error);
@@ -185,11 +185,12 @@ const productDetails = async (req, res, next) => {
   console.log("user:", user);
   try {
     const proId = req.params.id;
+    const categories = await productHelpers.getAllCategories();
     console.log("proId:", proId); 
     let product = await userHelpers.productDetails(proId);
     console.log("product:", product); 
     if (product && product.images && Array.isArray(product.images)) {
-      res.render("user/product-details", { admin: false, product, user });
+      res.render("user/product-details", { admin: false, product, user,categories });
     } else {
       
       console.error("Invalid product data:", product);
@@ -202,26 +203,7 @@ const productDetails = async (req, res, next) => {
   }
 };
 
-const orderedItems = async (req, res, next) => {
-  try {
-    
-    const orderId = req.params.id;
-    console.log("order id is : ", orderId);
 
-    let orderDetails = await userHelpers.getOrderedProducts(orderId);
-
-    let products = orderDetails.products;
-    let totalAmount = orderDetails.totalAmount;
-
-    console.log("Products is ", products);
-    console.log("Total Amount is ", totalAmount);
-
-    res.render("admin/view-order-products", {admin:true, products, totalAmount });
-  } catch (error) {
-    console.error("Error fetching ordered products:", error);
-    res.redirect("/");
-  }
-};
 
 
 module.exports = {
@@ -234,6 +216,5 @@ module.exports = {
   updateProduct,
   productDetails,
   viewProducts,
-  adminLogin,
-  orderedItems,
+  
 };

@@ -11,7 +11,7 @@ const nodeMailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
-const SMTP_PASS =process.env.SMTP_PASSWORD
+const SMTP_PASS = process.env.SMTP_PASSWORD;
 
 const sendVerifyEmail = async (name, email, user_id, response) => {
   try {
@@ -100,21 +100,31 @@ const sendResetEmail = async (user, response) => {
   }
 };
 
-const loginUser = (req, res, next) => {
-  if (req.session.authorized) {
-    res.redirect("/");
-  } else {
-    req.session.loginErr = false;
-    res.render("user/login-user", {
-      admin: false,
-      loginErr: req.session.loginErr,
-      req: req,
-    });
+const loginUser = async (req, res, next) => {
+  try {
+    if (req.session.authorized) {
+      res.redirect("/");
+    } else {
+      req.session.loginErr = false;
+      res.render("user/login-user", {
+        admin: false,
+        loginErr: req.session.loginErr,
+        req: req,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("error", { errorMessage: "Internal Server Error" });
   }
 };
 
-const signupUser = (req, res, next) => {
-  res.render("user/signup-user", { admin: false });
+const signupUser = async (req, res, next) => {
+  try {
+    res.render("user/signup-user", { admin: false });
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("error", { errorMessage: "Internal Server Error" });
+  }
 };
 
 const registerUser = async (req, res, next) => {
@@ -127,16 +137,17 @@ const registerUser = async (req, res, next) => {
       console.log(result.name);
       console.log(result.email);
       sendVerifyEmail(result.name, result.email, result.Id, res);
-      // res.render("user/enter-otp", { message: "Please check your email for otp" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).render("error", { errorMessage: "Internal Server Error" });
   }
 };
 
-const validateLogin = (req, res, next) => {
-  userHelpers.doLogin(req.body).then((response) => {
+const validateLogin = async (req, res, next) => {
+  try {
+    const response = await userHelpers.doLogin(req.body);
+
     if (response.status) {
       req.session.authorized = true;
       req.session.user = response.user;
@@ -145,12 +156,20 @@ const validateLogin = (req, res, next) => {
       req.session.loginErr = response.message || "Invalid Username or password";
       res.redirect("/login");
     }
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("error", { errorMessage: "Internal Server Error" });
+  }
 };
 
-const logOut = (req, res, next) => {
-  req.session.destroy();
-  res.redirect("/login");
+const logOut = async (req, res, next) => {
+  try {
+    req.session.destroy();
+    res.redirect("/login");
+  } catch (error) {
+    console.error(error);
+    res.status(500).render("error", { errorMessage: "Internal Server Error" });
+  }
 };
 
 const verifyEmail = async (req, res) => {
@@ -194,132 +213,24 @@ const addNewPassword = (req, res) => {
   });
 };
 
-const getCart = async (req, res) => {
-  const user = req.session.user;
-  let cartItems = await userHelpers.getCartProducts(req.session.user._id);
-  let totalValue = await userHelpers.getTotalAmount(req.session.user._id);
-  console.log("cartItems: ", cartItems);
-  cartItems.forEach((cartItem) => {
-    console.log("Images are:", cartItem.product.images);
-  });
-  res.render("user/cart", { user, cartItems, totalValue });
-};
-const addToCart = (req, res) => {
-  const user = req.session.user;
-  console.log("user:", user);
-  console.log("api called");
 
-  if (req.session.authorized) {
-    userHelpers.addToCart(req.params.id, req.session.user._id).then(() => {
-      res.json({ status: true, redirectToLogin: false });
-    });
-  } else {
-    // Return status with information to redirect to login
-    res.json({ status: false, redirectToLogin: true });
-  }
-};
 
-const changeProductQuantity = (req, res) => {
-  userHelpers.changeProductQuantity(req.body).then(async (response) => {
-    console.log(response);
-    response.total = await userHelpers.getTotalAmount(req.body.user);
-    res.json(response);
-  });
-};
 
-const placeOrder = async (req, res) => {
-  const user = req.session.user;
-  req.session.authorized = true;
-  const isAuthorized = req.session.authorized;
-  let total = await userHelpers.getTotalAmount(req.session.user._id);
-  let userDetails = await userHelpers.getUserDetails(req.session.user._id);
-  res.render("user/order", { total, user, isAuthorized, userDetails });
-};
-
-const checkout = async (req, res) => {
-  try {
-    let selectedAddressGroup = req.body;
-    console.log("payment is : ",req.body.payment);
-    let products = await userHelpers.getCartProductList(req.body.userId);
-    let totalPrice = await userHelpers.getTotalAmount(req.body.userId);
-    
-    
-
-    userHelpers
-      .placeOrder(selectedAddressGroup, products, totalPrice)
-      .then((orderId) => {
-        console.log("Placed Order ID:", orderId);
-        res.json({ status: true, orderId });
-      })
-      .catch((error) => {
-        console.error("Error placing order:", error);
-        res.json({ status: false, error: "Error placing order" });
-      });
-
-    if (req.body.payment == "COD") {
-
-    }
-    console.log("delivery detailsis : ",req.body);
-  } catch (error) {
-    console.error("Error in checkout:", error);
-    res.json({ status: false, error: "Error in checkout" });
-  }
-};
-
-const orderSuccess = async (req, res) => {
-  const orderId = req.query.orderId;
-  const user = req.session.user;
-  console.log("order id is : ", orderId);
-  // let products = await userHelpers.getOrderedProducts(orderId);
-  // console.log("orderes products are: " + products);
-  res.render("user/order-success-page", { user, orderId });
-  // const user = req.session.user;
-  // let orders = await userHelpers.getUserOrders(req.session.user._id);
-  // res.render("user/order-success", { user, orders });
-};
-
-const getOrderedProducts = async (req, res) => {
-  try {
-    const user = req.session.user;
-    const orderId = req.params.id;
-    console.log("order id is : ", orderId);
-
-    let orderDetails = await userHelpers.getOrderedProducts(orderId);
-
-    let products = orderDetails.products;
-    let totalAmount = orderDetails.totalAmount;
-
-    console.log("Products is ", products);
-    console.log("Total Amount is ", totalAmount);
-
-    res.render("user/view-order-products", { user, products, totalAmount });
-  } catch (error) {
-    console.error("Error fetching ordered products:", error);
-    res.redirect("/");
-  }
-};
-const getOrderedProductList = async (req, res) => {
-  const user = req.session.user;
-  // console.log(req.params.id);
-  // let products = await userHelpers.getOrderedProducts(req.params.id);
-  // console.log("orderes products are: " + products);
-  // res.render("user/view-order-products", { user, products });
-  let orders = await userHelpers.getUserOrders(req.session.user._id);
-  res.render("user/order-list", { user, orders, moment });
-};
 const getProfile = async (req, res) => {
   const user = req.session.user;
+  const categories = await productHelpers.getAllCategories();
   let userDetails = await userHelpers.getUserDetails(req.session.user._id);
 
-  res.render("user/profile", { user, userDetails });
+  res.render("user/profile", { user, userDetails ,categories});
 };
 
 const editProfile = async (req, res) => {
   const user = req.session.user;
+  const categories = await productHelpers.getAllCategories();
   console.log(req.params.id);
   let userDetails = await userHelpers.getUserDetails(req.params.id);
   console.log(userDetails);
-  res.render("user/edit-profile", { user, userDetails });
+  res.render("user/edit-profile", { user, userDetails,categories });
 };
 
 const changeProfile = async (req, res) => {
@@ -417,6 +328,27 @@ const resendOTPForgot = async (req, res) => {
   }
 };
 
+const verifyPayment = (req, res) => {
+  console.log(req.body);
+  let orderId = req.body["order[receipt]"];
+  userHelpers
+    .verifyPayment(req.body)
+    .then(() => {
+      userHelpers.changePaymentStatus(orderId).then(() => {
+        res.json({ status: true, orderId });
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.json({ status: false, errMsg: "" });
+    });
+};
+const getWallet =async (req,res)=>{
+  const user = req.session.user;
+  const categories = await productHelpers.getAllCategories();
+  res.render("user/wallet",{user,categories})
+}
+
 module.exports = {
   loginUser,
   signupUser,
@@ -424,18 +356,10 @@ module.exports = {
   validateLogin,
   logOut,
   verifyEmail,
-
   forgotPassword,
   resetPassword,
   changePassword,
   addNewPassword,
-  getCart,
-  addToCart,
-  changeProductQuantity,
-  placeOrder,
-  checkout,
-  orderSuccess,
-  getOrderedProductList,
   getProfile,
   editProfile,
   changeProfile,
@@ -445,5 +369,6 @@ module.exports = {
   verifyOTPForgot,
   resendOTP,
   resendOTPForgot,
-  getOrderedProducts,
+  verifyPayment,
+  getWallet,
 };

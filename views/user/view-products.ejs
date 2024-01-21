@@ -1,3 +1,16 @@
+<style>
+    /* .hide {
+        visibility: hidden;
+    } */
+    .no-padding {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .card {
+        margin: 0 15px;
+    }
+</style>
 <main>
     <div class="col-lg-9" style="padding-left: 500px;">
         <div id="header-carousel" class="carousel slide" data-ride="carousel">
@@ -41,7 +54,7 @@
 
 
     <!-- Featured Start -->
-    <div class="container-fluid pt-5">
+    <div class="container-fluid pt-5" id="featured">
         <div class="row px-xl-5 pb-3">
             <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
                 <div class="d-flex align-items-center border mb-4" style="padding: 30px;">
@@ -73,7 +86,7 @@
 
 
     <!-- Categories Start -->
-    <div class="container-fluid pt-5">
+    <div class="container-fluid pt-5" id="category">
         <div class="row px-xl-5 pb-3">
             <div class="col-lg-4 col-md-6 pb-1">
                 <div class="cat-item d-flex flex-column border mb-4" style="padding: 30px;">
@@ -135,7 +148,7 @@
 
 
     <!-- Offer Start -->
-    <div class="container-fluid offer pt-5">
+    <div class="container-fluid offer pt-5" id="offer">
         <div class="row px-xl-5">
             <div class="col-md-6 pb-4">
                 <div class="position-relative bg-secondary text-center text-md-right text-white mb-2 py-5 px-5">
@@ -167,10 +180,10 @@
         <div class="text-center mb-4">
             <h2 class="section-title px-5"><span class="px-2">Trandy Products</span></h2>
         </div>
-        <div class="row px-xl-5 pb-3">
+        <div class="row no-gutters px-xl-5 pb-3 product">
             <% products.forEach(function(product) { %>
                 <% if (!product.isDeleted) { %>
-                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1 no-padding">
                         <div class="card product-item border-0 mb-4">
                             <div
                                 class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
@@ -180,7 +193,7 @@
                                     <% } %>
                             </div>
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                <h6 class="text-truncate mb-3">
+                                <h6 class="text-truncate mb-3 product-name">
                                     <%= product.name %>
                                 </h6>
                                 <div class="d-flex justify-content-center">
@@ -189,6 +202,9 @@
                                 </div>
                                 <h6 class="text-truncate mb-3">
                                     <%= product.description %>
+                                </h6>
+                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>">
+                                    Category:<%= product.category %>
                                 </h6>
                             </div>
                             <div class="card-footer d-flex justify-content-between bg-light border">
@@ -249,7 +265,7 @@
                                     <% } %>
                             </div>
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                <h6 class="text-truncate mb-3">
+                                <h6 class="text-truncate mb-3 product-name">
                                     <%= product.name %>
                                 </h6>
                                 <div class="d-flex justify-content-center">
@@ -258,6 +274,9 @@
                                 </div>
                                 <h6 class="text-truncate mb-3">
                                     <%= product.description %>
+                                </h6>
+                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>">
+                                    Category:<%= product.category %>
                                 </h6>
                             </div>
                             <div class="card-footer d-flex justify-content-between bg-light border">
@@ -276,38 +295,84 @@
 </main>
 
 <script>
-    //  function addToCart(proId) {
-    //     console.log("addToCart function called");
-    //     $.ajax({
-    //         url: "/add-to-cart/" + proId,
-    //         method: "get",
-    //         complete: function(xhr, textStatus) {
-    //             if (xhr.status === 302) {
-    //                 // Redirect to the login page
-    //                 console.log("hello");
-    //                 window.location.href = "/login";
-    //             } else if (xhr.status === 200) {
-    //                 // Request was successful
-    //                 var response = xhr.responseText;
-    //                 try {
-    //                     response = JSON.parse(response);
-    //                     if (response.status) {
-    //                         alert("Product added to cart successfully!");
-    //                     } else {
-    //                         alert(response.message);
-    //                     }
-    //                 } catch (e) {
-    //                     console.error("Error parsing JSON response: " + e);
-    //                 }
-    //             } else {
-    //                 alert("Error: " + xhr.status);
-    //             }
-    //         }
-    //     });
-    // }
-
     history.pushState(null, null, location.href);
     window.onpopstate = function (event) {
         history.go(1);
     };
+</script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchButton = document.getElementById("search");
+        const searchInput = document.getElementById("search-input");
+        const productColumns = document.querySelectorAll('.col-lg-3');
+
+        searchButton.addEventListener("click", () => {
+            const searchValue = searchInput.value.trim().toUpperCase();
+
+            productColumns.forEach((column) => {
+                let found = Array.from(column.querySelectorAll('.card'))
+                    .some(product => {
+                        let productName = product.querySelector('.product-name');
+                        let value = productName.innerText || productName.textContent;
+                        return value.toUpperCase().includes(searchValue);
+                    });
+                 console.log("Found is : ",found);
+                column.style.display = found ? "flex" : "none";
+            });
+
+            hideSectionsOnSearch();
+        });
+    });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const categoryButtons = document.querySelectorAll('.category-button');
+        const productColumns = document.querySelectorAll('.col-lg-3');
+
+        categoryButtons.forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.preventDefault();
+
+                // Get the category value from the data-category attribute
+                let selectedCategory = button.getAttribute('data-category');
+
+                console.log("Category is: ", selectedCategory);
+
+                // Loop through product columns and filter products based on category
+                productColumns.forEach((column) => {
+                    let products = column.querySelectorAll('.card');
+                    products.forEach((product) => {
+                        let productCategory = product.querySelector('.product-category');
+                        let productCategoryValue = productCategory.getAttribute('data-category');
+                        console.log("product category value: ", productCategoryValue);
+
+                        if (productCategoryValue === selectedCategory || selectedCategory === 'ALL') {
+                            column.style.display = "flex";
+                        } else {
+                            column.style.display = "none";
+                        }
+                    });
+                });
+
+                hideSectionsOnSearch();
+            });
+        });
+    });
+
+
+    function hideSectionsOnSearch() {
+
+        hideSectionById("header-carousel");
+        hideSectionById("featured");
+        hideSectionById("offer");
+        hideSectionById("category");
+    }
+
+    function hideSectionById(id) {
+        let section = document.getElementById(id);
+        if (section) {
+            section.style.display = "none";
+        }
+    }
 </script>

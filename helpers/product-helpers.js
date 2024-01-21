@@ -266,6 +266,19 @@ module.exports = {
         });
     });
   },
+  returnOrder: (orderId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .updateOne(
+          { _id: new objectId(orderId) },
+          { $set: { status: "Returned" } }
+        )
+        .then((response) => {
+          resolve(response);
+        });
+    });
+  },
   deliveredOrder: (orderId) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()

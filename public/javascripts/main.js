@@ -137,38 +137,37 @@ function addToCart(proId) {
     },
   });
 }
-function changeQuantity(cartId, proId, userId, count) {
-  let quantity = parseInt(document.getElementById(proId).value);
-  count = parseInt(count);
-  $.ajax({
-    url: "/change-product-quantity",
-    data: {
-      user: userId,
-      cart: cartId,
-      product: proId,
-      count: count,
-      quantity: quantity,
-    },
-    method: "post",
-    success: (response, status, xhr) => {
-      if (xhr.status === 200) {
-        console.log("Server Response:", response);
-        if (response.removedProduct) {
-          alert("Product removed from the cart");
-          location.reload();
+  function changeQuantity(cartId, proId, userId, count) {
+    let quantity = parseInt(document.getElementById(proId).value);
+    count = parseInt(count);
+    $.ajax({
+      url: "/change-product-quantity",
+      data: {
+        user: userId,
+        cart: cartId,
+        product: proId,
+        count: count,
+        quantity: quantity,
+      },
+      method: "post",
+      success: (response, status, xhr) => {
+        if (xhr.status === 200) {
+          console.log("Server Response:", response);
+          if (response.removedProduct) {
+            location.reload();
+          } else {
+            document.getElementById(proId).value = quantity + count;
+            document.getElementById("total").innerHTML = response.total;
+          }
         } else {
-          document.getElementById(proId).value = quantity + count;
-          document.getElementById("total").innerHTML = response.total;
+          console.error("Unexpected status code:", xhr.status);
         }
-      } else {
-        console.error("Unexpected status code:", xhr.status);
-      }
-    },
+      },
 
-    error: (xhr, status, error) => {
-      console.error("AJAX Error:", error);
-    },
-  });
-}
+      error: (xhr, status, error) => {
+        console.error("AJAX Error:", error);
+      },
+    });
+  }
 
 jQuery;
