@@ -5,20 +5,13 @@ const {
   getUsers,
   blockUser,
   unBlockUser,
-  category,
-  addCategory,
-  categoryAdding,
-  getOrders,
-  cancelOrder,
   verifyAdminLogin,
   adminLogout,
-  deliveredOrder,
-  shippedOrder,
+  adminLogin,
   
 } = require("../controllers/adminController");
 
 const {
-  adminLogin,
   getProducts,
   addProducts,
   productAdding,
@@ -26,8 +19,27 @@ const {
   restoreProduct,
   editProduct,
   updateProduct,
-  orderedItems,
 } = require("../controllers/productController");
+const{
+  getCoupons,
+  addCoupons,
+  createCoupon,
+  editCoupon,
+  updateCoupon
+}=require('../controllers/couponController.js')
+
+const{
+    category,
+    addCategory ,
+    categoryAdding,
+}=require('../controllers/categoryController.js')
+const{
+  getOrders,
+  cancelOrder,
+  deliveredOrder,
+  shippedOrder,
+  orderedItems,
+}=require('../controllers/orderController.js')
 
 /* GET home page. */
 router.get("/", adminLogin);
@@ -61,4 +73,14 @@ router.get("/delivered-order/:id",isAdmin, deliveredOrder);
 router.get("/shipped-order/:id",isAdmin, shippedOrder);
 
 router.get("/ordered-items/:id",isAdmin, orderedItems);
+
+router.get("/coupons",isAdmin,getCoupons)
+
+router.get("/add-coupons",isAdmin,addCoupons)
+router.post("/add-coupons",isAdmin,createCoupon)
+
+router.get("/edit-coupon/:id",isAdmin,editCoupon);
+router.post("/edit-coupon/:id",isAdmin,updateCoupon);
+
+
 module.exports = router;

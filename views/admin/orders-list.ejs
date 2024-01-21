@@ -17,7 +17,8 @@
                                     <tr>
                                         <th class="text-center">User</th>
                                         <th class="text-center">Order Date</th>
-                                        <th class="text-center">Mobile</th>
+
+                                        <th class="text-center">Payment Method</th>
                                         <th class="text-center">Delivery Adress</th>
                                         <th class="text-center">Total</th>
                                         <th class="text-center">Status</th>
@@ -39,8 +40,9 @@
                                             <td>
                                                 <%= moment(order.date).format('MMM Do YY') %>
                                             </td>
+
                                             <td>
-                                                <%= order.deliveryDetails.mobile %>
+                                                <%= order.paymentMethod%>
                                             </td>
                                             <td>
                                                 <strong>Name:</strong>
@@ -62,8 +64,8 @@
 
                                             <td>
                                                 <!-- <a href="/admin/shipped-order/<%= order._id %>"> -->
-                                                    <button type="button" class="btn btn-success"
-                                                        onclick="shipped('<%= order._id %>')">Shipped</button>
+                                                <button type="button" class="btn btn-success"
+                                                    onclick="shipped('<%= order._id %>')">Shipped</button>
                                                 <!-- </a> -->
                                             </td>
                                             <td>
@@ -74,8 +76,8 @@
                                             </td>
                                             <td>
                                                 <!-- <a href="/admin/cancel-order/<%= order._id %>"> -->
-                                                    <button type="button" class="btn btn-success"
-                                                        onclick="cancelled('<%= order._id %>')">Cancel</button>
+                                                <button type="button" class="btn btn-success"
+                                                    onclick="cancelled('<%= order._id %>')">Cancel</button>
                                                 <!-- </a> -->
                                             </td>
                                             <td>
@@ -109,18 +111,18 @@
                             console.log("Adding 'text-success' class");
                             statusElement.classList.remove("text-warning", "text-danger")
                             statusElement.classList.add("text-success");
-                            
+
                         } else {
                             console.log("Status element not found.");
                         }
                     } else {
                         console.log("Server response indicates failure.");
-                        
+
                     }
                 },
                 error: (error) => {
                     console.error("AJAX request failed: ", error);
-                   
+
                 }
             });
         }
@@ -137,18 +139,18 @@
                             console.log("Adding 'text-success' class");
                             statusElement.classList.remove("text-success", "text-danger")
                             statusElement.classList.add("text-warning");
-                            
+
                         } else {
                             console.log("Status element not found.");
                         }
                     } else {
                         console.log("Server response indicates failure.");
-                        
+
                     }
                 },
                 error: (error) => {
                     console.error("AJAX request failed: ", error);
-                   
+
                 }
             });
         }
@@ -165,18 +167,18 @@
                             console.log("Adding 'text-success' class");
                             statusElement.classList.remove("text-warning", "text-success")
                             statusElement.classList.add("text-danger");
-                            
+
                         } else {
                             console.log("Status element not found.");
                         }
                     } else {
                         console.log("Server response indicates failure.");
-                        
+
                     }
                 },
                 error: (error) => {
                     console.error("AJAX request failed: ", error);
-                   
+
                 }
             });
         }

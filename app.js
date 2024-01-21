@@ -85,24 +85,5 @@ app.use(function (err, req, res, next) {
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running at ${PORT} successfully`);
-  // setInterval(async () => {
-  //   try {
-  //     if (otpCollection) {
-  //       const currentTime = Date.now();
-  //       const result = await otpCollection.deleteMany({
-  //         expiresAt: { $lt: currentTime },
-  //       });
-
-  //       console.log("Current Time:", currentTime);
-
-  //       console.log("Deleted Count:", result.deletedCount);
-  //       console.log("Expired OTPs deleted.");
-  //     } else {
-  //       console.error("OTP collection not initialized.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting expired OTPs:", error);
-  //   }
-  // }, 60000);
 });
 module.exports = app;

@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  appliedCoupons: {
+    type: String,
+    unique: true,
+    default:null,
+  },
   // otp:{
   //  type:String,
   //  default:null,

@@ -1,0 +1,39 @@
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Edit Coupons</h4>
+                        <div class="basic-form">
+                            <form action="/admin/edit-coupon/<%= coupon._id %>" method="post">
+                                
+                                <% if (typeof error !=='undefined' ) { %>
+                                    <div class="alert alert-danger" role="alert">
+                                        <%= error %>
+                                    </div>
+                                    <% } %>
+                                        <div class="form-group col-md-6">
+                                            <label>Coupon Name</label>
+                                            <input type="text" name="name" class="form-control" value="<%= coupon.name %>">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Expiry</label>
+                                            <% const formattedDate = new Date(coupon.expiry).toISOString().split('T')[0]; %>
+                                            <input type="date" name="expiry" class="form-control" value="<%= formattedDate %>">
+                                        </div>
+                                        
+                                        <div class="form-group col-md-6">
+                                            <label>Discount in Percentage</label>
+                                            <input type="text" name="discount" class="form-control" value="<%= coupon.discount %>">
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-dark">Update</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

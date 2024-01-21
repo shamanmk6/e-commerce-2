@@ -14,13 +14,6 @@ const {
   resetPassword,
   changePassword,
   addNewPassword,
-  getCart,
-  addToCart,
-  changeProductQuantity,
-  placeOrder,
-  checkout,
-  orderSuccess,
-  getOrderedProductList,
   getProfile,
   editProfile,
   changeProfile,
@@ -29,13 +22,33 @@ const {
   verifyOTP,
   verifyOTPForgot,
   resendOTP,
-  getOrderedProducts,
   resendOTPForgot,
+  verifyPayment,
+  getWallet,
+  
 } = require("../controllers/userController.js");
 const {
   productDetails,
   viewProducts,
 } = require("../controllers/productController.js");
+const{
+  applyCoupon,
+}=require('../controllers/couponController.js');
+const{
+  cancelOrder,
+  placeOrder,
+  orderSuccess,
+  getOrderedProductList,
+  getOrderedProducts,
+  returnOrder,
+}=require('../controllers/orderController.js')
+const{
+  getCart,
+  addToCart,
+  changeProductQuantity,
+  checkout,
+}=require('../controllers/cartController.js');
+
 // const { verifyEmail } = require('../helpers/user-helpers');
 
 // const checkLogin = (req, res, next) => {
@@ -101,4 +114,12 @@ router.get("/resend-otp-forgot", async (req, res) =>
   resendOTP(req, res, "/enter-otp-forgot")
 );
 
+router.post("/verify-payment",verifyPayment)
+
+router.post("/apply-coupon",verifyLogin,applyCoupon)
+
+router.get("/cancel-order/:id",verifyLogin,cancelOrder);
+router.get("/return-order/:id",verifyLogin,returnOrder);
+
+router.get("/wallet",verifyLogin,getWallet)
 module.exports = router;
