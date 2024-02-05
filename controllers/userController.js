@@ -13,6 +13,8 @@ const bcrypt = require("bcrypt");
 const moment = require("moment");
 const SMTP_PASS = process.env.SMTP_PASSWORD;
 
+
+
 const sendVerifyEmail = async (name, email, user_id, response) => {
   try {
     const transporter = nodeMailer.createTransport({
@@ -153,8 +155,8 @@ const validateLogin = async (req, res, next) => {
       req.session.user = response.user;
       res.redirect("/");
     } else {
-      req.session.loginErr = response.message || "Invalid Username or password";
-      res.redirect("/login");
+      let loginErr = response.message || "Invalid Email or Password";
+      res.render("user/login-user",{loginErr});
     }
   } catch (error) {
     console.error(error);
@@ -346,7 +348,9 @@ const verifyPayment = (req, res) => {
 const getWallet =async (req,res)=>{
   const user = req.session.user;
   const categories = await productHelpers.getAllCategories();
-  res.render("user/wallet",{user,categories})
+  const wallet=await userHelpers.getWallet(user._id);
+  console.log("Wallet Is: ",wallet);
+  res.render("user/wallet",{user,categories,wallet})
 }
 
 module.exports = {

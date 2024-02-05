@@ -24,6 +24,16 @@
                             value="<%= userDetails.address %>" readonly>
                     </div>
                     <div class="col-md-6 form-group">
+                        <label>Referal Code</label>
+                        <div class="input-group">
+                            <input class="form-control" type="text" placeholder="" name="referal" value="<%= userDetails.referalCode %>" readonly>
+                            <div class="input-group-append">
+                                
+                                <button class="btn btn-secondary" type="button" id="copyReferalCode">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 form-group">
                         <label>Pincode</label>
                         <input class="form-control" type="text" placeholder="123 Street" name="pincode"
                             value="<%= userDetails.pincode %>" readonly>
@@ -36,3 +46,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    
+    document.getElementById('copyReferalCode').addEventListener('click', function() {
+    
+        var referalInput = document.getElementsByName('referal')[0];
+
+        
+        referalInput.select();
+        referalInput.setSelectionRange(0, 99999); 
+
+        
+        document.execCommand('copy');
+        
+        
+        referalInput.blur();
+    });
+</script>

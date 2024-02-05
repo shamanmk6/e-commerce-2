@@ -13,6 +13,9 @@ module.exports = {
       price: product.price,
       category: product.category,
       description: product.description,
+      offer: product.offer,
+      offerStart: product.offerStart,
+      offerEnd: product.offerEnd,
       quantity: product.quantity,
       images: [], // Initialize the images field as an empty array
     });
@@ -81,6 +84,9 @@ module.exports = {
         price: product.price,
         category: product.category,
         quantity: product.quantity,
+        offer: product.offer,
+        offerStart: product.offerStart,
+        offerEnd: product.offerEnd,
         description: product.description,
         images: product.images || [], // Assuming 'images' is an array field
         isDeleted: product.isDeleted,
@@ -189,27 +195,35 @@ module.exports = {
   updateProduct: (proId, proDetails, images) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await db
+        const productCollection = db
           .getDatabase()
-          .collection(collection.PRODUCT_COLLECTION)
-          .updateOne(
-            { _id: new objectId(proId) },
-            {
-              $set: {
-                name: proDetails.name,
-                description: proDetails.description,
-                price: proDetails.price,
-                category: proDetails.category,
-                quantity: proDetails.quantity,
-                images: images, // Assuming 'images' is an array
-              },
-            }
-          );
+          .collection(collection.PRODUCT_COLLECTION);
+
+        // Check if new images are uploaded
+        const updateData = {
+          name: proDetails.name,
+          description: proDetails.description,
+          price: proDetails.price,
+          category: proDetails.category,
+          quantity: proDetails.quantity,
+          offer: proDetails.offer,
+          offerStart: proDetails.offerStart,
+          offerEnd: proDetails.offerEnd,
+        };
+
+        if (images.length > 0) {
+          updateData.images = images;
+        }
+
+        const response = await productCollection.updateOne(
+          { _id: new objectId(proId) },
+          { $set: updateData }
+        );
 
         if (response.modifiedCount > 0) {
           resolve();
         } else {
-          reject(new Error("No document was updated."));
+          resolve("no document updated")
         }
       } catch (error) {
         reject(error);
@@ -253,26 +267,169 @@ module.exports = {
       }
     });
   },
-  cancelOrder: (orderId) => {
+  cancelRequest: (orderId, message) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .findOne({ _id: new objectId(orderId) })
+        .then((order) => {
+          if (!order) {
+            reject(new Error("Order not found"));
+            return;
+          }
+
+          const { totalAmount, userId } = order;
+          console.log("total amount of cancelled order is: ", totalAmount);
+          db.getDatabase()
+            .collection(collection.ORDER_COLLECTION)
+            .updateOne(
+              { _id: new objectId(orderId) },
+              { $set: { status: "Cancelled", cancelReason: message } }
+            )
+            .then((orderUpdateResponse) => {
+              db.getDatabase()
+                .collection(collection.WALLET_COLLECTION)
+                .findOne({
+                  userId: new objectId(userId),
+                  "cancelledOrders.orderId": new objectId(orderId),
+                })
+                .then((existingWalletOrder) => {
+                  if (!existingWalletOrder) {
+                    db.getDatabase()
+                      .collection(collection.WALLET_COLLECTION)
+                      .updateOne(
+                        { userId: new objectId(userId) },
+                        {
+                          $inc: { totalAmountWallet: totalAmount },
+                          $push: {
+                            cancelledOrders: {
+                              orderId: new objectId(orderId),
+                              totalAmount,
+                            },
+                          },
+                        },
+                        { upsert: true }
+                      )
+                      .then((walletUpdateResponse) => {
+                        resolve({
+                          orderUpdateResponse,
+                          walletUpdateResponse,
+                        });
+                      })
+                      .catch((walletUpdateError) => {
+                        reject(walletUpdateError);
+                      });
+                  } else {
+                    resolve();
+                  }
+                })
+                .catch((existingWalletOrderError) => {
+                  reject(existingWalletOrderError);
+                });
+            })
+            .catch((orderUpdateError) => {
+              reject(orderUpdateError);
+            });
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  cancelOrder: (orderId, message) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.ORDER_COLLECTION)
+        .findOne({ _id: new objectId(orderId) })
+        .then((order) => {
+          if (!order) {
+            reject(new Error("Order not found"));
+            return;
+          }
+
+          const { totalAmount, userId } = order;
+          console.log("total amount of cancelled order is: ", totalAmount);
+          db.getDatabase()
+            .collection(collection.ORDER_COLLECTION)
+            .updateOne(
+              { _id: new objectId(orderId) },
+              { $set: { status: "Cancelled", adminCancelReason: message } }
+            )
+            .then((orderUpdateResponse) => {
+              db.getDatabase()
+                .collection(collection.WALLET_COLLECTION)
+                .findOne({
+                  userId: new objectId(userId),
+                  "cancelledOrders.orderId": new objectId(orderId),
+                })
+                .then((existingWalletOrder) => {
+                  if (!existingWalletOrder) {
+                    db.getDatabase()
+                      .collection(collection.WALLET_COLLECTION)
+                      .updateOne(
+                        { userId: new objectId(userId) },
+                        {
+                          $inc: { totalAmountWallet: totalAmount },
+                          $push: {
+                            cancelledOrders: {
+                              orderId: new objectId(orderId),
+                              totalAmount,
+                            },
+                          },
+                        },
+                        { upsert: true }
+                      )
+                      .then((walletUpdateResponse) => {
+                        resolve({
+                          orderUpdateResponse,
+                          walletUpdateResponse,
+                        });
+                      })
+                      .catch((walletUpdateError) => {
+                        reject(walletUpdateError);
+                      });
+                  } else {
+                    resolve();
+                  }
+                })
+                .catch((existingWalletOrderError) => {
+                  reject(existingWalletOrderError);
+                });
+            })
+            .catch((orderUpdateError) => {
+              reject(orderUpdateError);
+            });
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  returnRequest: (orderId, message) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()
         .collection(collection.ORDER_COLLECTION)
         .updateOne(
           { _id: new objectId(orderId) },
-          { $set: { status: "Cancelled" } }
+          {
+            $set: {
+              returnReason: message,
+              status: "Return Request Placed",
+            },
+          }
         )
         .then((response) => {
           resolve(response);
         });
     });
   },
-  returnOrder: (orderId) => {
+  returnOrder: (orderId, message) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()
         .collection(collection.ORDER_COLLECTION)
         .updateOne(
           { _id: new objectId(orderId) },
-          { $set: { status: "Returned" } }
+          { $set: { status: message } }
         )
         .then((response) => {
           resolve(response);
@@ -312,7 +469,7 @@ module.exports = {
         let admin = await db
           .getDatabase()
           .collection(collection.ADMIN_COLLECTION)
-          .findOne({ email: email }); // Use the email parameter
+          .findOne({ email: email });
 
         if (admin && password === admin.password) {
           console.log("Login-success");
@@ -326,6 +483,23 @@ module.exports = {
       } catch (error) {
         console.error("Error during login:", error);
         resolve({ status: false, message: "An error occurred during login" });
+      }
+    });
+  },
+  deleteImage: (proId, imageName) => {
+    return new Promise((resolve, reject) => {
+     const response= db.getDatabase()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateOne(
+          { _id: new objectId(proId) },
+          { $pull: { images: imageName } }
+        )
+        if (response.modifiedCount > 0) {
+          console.log("updated");
+          resolve();
+      }else{
+        console.log("no documents updated");
+        resolve("no documents updated")
       }
     });
   },

@@ -7,44 +7,63 @@
         <link rel="stylesheet" href="/stylesheets/style.css">
         <!-- Add other stylesheet links if needed -->
     </head>
-
+    <div class="container-fluid bg-secondary mb-5">
+        <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 150px">
+            <h1 class="font-weight-semi-bold text-uppercase mb-3">WALLET</h1>
+            <div class="d-inline-flex">
+                <p class="m-0"><a href="/">Home</a></p>
+                <p class="m-0 px-2">-</p>
+                <p class="m-0">WALLET</p>
+            </div>
+        </div>
+    </div>
     <div class="container-fluid pt-5">
         <div class="row px-xl-5">
             <div class="col-lg-8 table-responsive mb-5" style="margin-left: 150px;">
-               <table class="table table-bordered text-center mb-0">
+                <% if (wallet && wallet.cancelledOrders) { %>
+                  <table class="table table-bordered text-center mb-0">
                     <thead class="bg-secondary text-dark">
-                        <tr>
-                            
-                            <th>Returned Order</th>
-                            <th>Order Amount</th>
-                           
-                        </tr>
+                      <tr>
+                        <th>Credited By</th>
+                        <th>Amount</th>
+                      </tr>
                     </thead>
                     <tbody class="align-middle">
-                        
-                            <tr>
-                                
-                                <td class="align-middle">
-                                    Hello
-                                </td>
-                                
-                            </tr>
-                        
-                    </tbody>
-                </table >
-                <table class="table table-bordered text-center mb-0">
-                    <tbody>
+                      <% wallet.cancelledOrders.forEach(function(order) { %>
                         <tr>
-                        <td class="align-middle">
-                            Total Amount:
+                          <td class="align-middle">
+                           Cancelled Order Id is: <%= order.orderId %>
+                            <a href="/view-ordered-products/<%= order.orderId %>" class="btn btn-primary">View Details</a>
+                          </td>
+                          <td class="align-middle">
+                            ₹<%= order.totalAmount %>
+                          </td>
+                        </tr>
+                      <% }); %>
+                      <tr>
+                        <td colspan="2" class="align-middle" style="font-weight: 500;">
+                          Referal Amount Credited: ₹<%= wallet.referalAmount %>
                         </td>
-                        <td class="align-middle">
-                            ₹
-                        </td>
-                    </tr>
+                      </tr>
                     </tbody>
-                </table>
-            </div>
+                  </table>
+                  <table class="table table-bordered text-center mb-0">
+                    <tbody>
+                      <tr>
+                        <td class="align-middle" style="font-weight: bolder;">
+                          Total Amount in Wallet:
+                        </td>
+                        <td class="align-middle" style="font-weight: bolder;">
+                          ₹<%= wallet.totalAmountWallet %>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                <% } else { %>
+                  <h6 style="align-items: center;">No Wallet</h6>
+                <% } %>
+              </div>
+              
         </div>
     </div>
 </body>

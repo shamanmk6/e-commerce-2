@@ -37,6 +37,16 @@
                                         value="<%= product.quantity %>">
                                 </div>
                                 <div class="form-group col-md-6">
+                                    <label>Offer</label>
+                                    <input type="number" name="offer" class="form-control" value="<%= product.offer %>">
+                                    <label>Starting Date</label>
+                                    <input type="date" name="offerStart" class="form-control"
+                                        value="<%= product.offerStart %>">
+                                    <label>Ending Date</label>
+                                    <input type="date" name="offerEnd" class="form-control"
+                                        value="<%= product.offerEnd %>">
+                                </div>
+                                <div class="form-group col-md-6">
                                     <label>Description</label>
                                     <input type="text" name="description" class="form-control"
                                         value="<%= product.description %>">
@@ -44,9 +54,16 @@
                                 <div class="form-group col-md-6">
                                     <label>Image</label>
                                     <% if (product.images && product.images.length> 0) { %>
-                                        <% product.images.forEach(function(image) { %>
-                                            <img src="/product-images/<%= image %>" alt=""
-                                                style="width: 100px; height:auto;" class="p-1">
+                                        <% product.images.forEach(function(image, index) { %>
+                                            <div class="image-container" id="image_<%= image %>">
+                                                <div class="image-wrapper">
+                                                    <img src="/product-images/<%= image %>" alt=""
+                                                        style="width: 100px; height:auto;" class="p-1">
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                    onclick="deleteImage('<%= product._id %>', '<%= image %>')">Delete</button>
+                                                </div>
+
+                                            </div>
                                             <% }) %>
                                                 <% } %>
                                                     <input type="file" name="image" class="form-control" multiple
@@ -62,3 +79,31 @@
         </div>
     </div>
 </div>
+
+<script>
+    function deleteImage(proId,image) {
+        $.ajax({
+            url: "/admin/delete-image/" + proId,
+            method: "post",
+            data: {
+                imageName:image 
+            },
+            success: (response) => {
+                if (response.status) {
+                    let imageDiv = document.getElementById("image_" + image)
+                    console.log("image div is: ", imageDiv);
+                    if (imageDiv) {
+                        imageDiv.style.display = 'none'
+                    }
+                } else {
+                    console.log("Server response indicates failure.");
+                }
+            },
+            error: (error) => {
+                console.error("AJAX request failed: ", error);
+            }
+        });
+
+
+    }
+</script>

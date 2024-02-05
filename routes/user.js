@@ -40,7 +40,8 @@ const{
   orderSuccess,
   getOrderedProductList,
   getOrderedProducts,
-  returnOrder,
+  returnRequest,
+  cancelRequest
 }=require('../controllers/orderController.js')
 const{
   getCart,
@@ -118,8 +119,8 @@ router.post("/verify-payment",verifyPayment)
 
 router.post("/apply-coupon",verifyLogin,applyCoupon)
 
-router.get("/cancel-order/:id",verifyLogin,cancelOrder);
-router.get("/return-order/:id",verifyLogin,returnOrder);
+router.post("/cancel-order/:id",verifyLogin,cancelRequest);
+router.post("/return-order/:id",verifyLogin,returnRequest);
 
 router.get("/wallet",verifyLogin,getWallet)
 module.exports = router;

@@ -26,19 +26,36 @@
                         <table class="table table-striped table-bordered zero-configuration mt-3">
                             <thead>
                                 <tr>
-                                    <th>Title</th>
                                     <th>Category</th>
-
+                                    <th>Offer</th>
+                                    <th>Offer Start</th>
+                                    <th>Offer End</th>
+                                    <th>Edit Category</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% categories.forEach(function(category){ %>
                                     <tr>
                                         <td>
-                                            <%= category.title %>
+                                            <%= category.category %>
                                         </td>
                                         <td>
-                                            <%= category.category %>
+                                            <% if(category.offer){ %>
+                                                <%= category.offer %>%
+                                                    <%} else { %>
+                                                        0%
+                                                        <% } %>
+                                        </td>
+                                        <td>
+                                            <%= category.offerStart %>
+                                        </td>
+                                        <td>
+                                            <%= category.offerEnd %>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/edit-category/<%= category._id %>">
+                                                <button type="button" class="btn btn-primary">Edit</button>
+                                            </a>
                                         </td>
                                     </tr>
 
