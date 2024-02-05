@@ -58,22 +58,25 @@ const applyCoupon = async (req, res) => {
     let totalValue =
       req.session.discountedTotal ||
       (await userHelpers.totalAmount(req.session.user._id));
+    const categories = await productHelpers.getAllCategories();
 
-      if (validCouponResponse.couponDocument.discount) {
-        
-        const discountValue = parseFloat(validCouponResponse.couponDocument.discount);
-        if (!isNaN(discountValue)) {
-            totalValue = (discountValue / 100) * totalValue;
-            req.session.discountedTotal = totalValue;
-            await userHelpers.updateCartTotal(req.session.user._id, totalValue);
-        } else {
-            console.error('Invalid discount value:', validCouponResponse.couponDocument.discount);
-            
-        }
+    if (validCouponResponse.couponDocument.discount) {
+      const discountValue = parseFloat(
+        validCouponResponse.couponDocument.discount
+      );
+      if (!isNaN(discountValue)) {
+        totalValue = (discountValue / 100) * totalValue;
+        req.session.discountedTotal = totalValue;
+        await userHelpers.updateCartTotal(req.session.user._id, totalValue);
+      } else {
+        console.error(
+          "Invalid discount value:",
+          validCouponResponse.couponDocument.discount
+        );
+      }
     }
-    
 
-    res.render("user/cart", { user, cartItems, totalValue });
+    res.render("user/cart", { user, cartItems, totalValue, categories });
   } catch (error) {
     const user = req.session.user;
     console.error("Error applying coupon:", error.message);
@@ -93,12 +96,28 @@ const editCoupon = async (req, res) => {
   res.render("admin/edit-coupon", { coupon, admin });
 };
 
-const updateCoupon = async (req,res) => {
-    let couponId= req.params.id;
-   console.log("update Coupon:",req.body);
-   await userHelpers.updateCoupon(req.body,couponId)
-   res.redirect('/admin/coupons')
+const updateCoupon = async (req, res) => {
+  try {
+    let coupon = await userHelpers.getCoupon(req.params.id);
+    const admin = req.session.admin;
+    let couponId = req.params.id;
+    console.log("update Coupon:", req.body);
+
+    const message =  await userHelpers.updateCoupon(req.body, couponId);
+    console.log("message is ",message);
+    if (!message) {
+      res.redirect("/admin/coupons");
+      return;
+    }
+    console.log("rendering edit-coupon");
+    res.render('admin/edit-coupon',{error:message,admin,coupon});
+  } catch (error) {
+    console.error("Error updating coupon:", error);
+      res.status(500).send("Internal Server Error");
+    
+  }
 };
+
 
 module.exports = {
   getCoupons,

@@ -6,22 +6,32 @@
         <!-- Stylesheets -->
         <link rel="stylesheet" href="/stylesheets/style.css">
         <!-- Add other stylesheet links if needed -->
+        <style>
+            .select-option {
+                font-family: Poppins, sans-serif;
+                font-size: 1rem;
+                font-weight: 400;
+                line-height: 1.5;
+                color: #6F6F6F;
+                text-align: left;
+            }
+        </style>
     </head>
 
     <div class="container-fluid pt-5">
         <div class="row px-xl-5">
             <div class="col-lg-8 table-responsive mb-5" style="margin-left: 150px;">
-    
-                
-                
-    
+
+
+
+
                 <table class="table table-bordered text-center mb-0">
                     <thead class="bg-secondary text-dark">
                         <tr>
                             <th>Products</th>
                             <th>Price</th>
                             <th>Quantity</th>
-                           
+
                         </tr>
                     </thead>
                     <tbody class="align-middle">
@@ -34,29 +44,262 @@
                                 </td>
                                 <td class="align-middle">
                                     ₹<%= item.product.price %>/-
-                                 </td>
+                                </td>
                                 <td class="align-middle">
                                     <%= item.quantity %>
                                 </td>
-                                
+
                             </tr>
-                        <% }) %>
-                        
+                            <% }) %>
+
                     </tbody>
-                </table >
+                </table>
                 <table class="table table-bordered text-center mb-0">
                     <tbody>
                         <tr>
-                        <td class="align-middle">
-                            Total Amount:
-                        </td>
-                        <td class="align-middle">
-                            ₹<%= totalAmount %>
-                        </td>
-                    </tr>
+                            <td class="align-middle">
+                                Total Amount:
+                            </td>
+                            <td class="align-middle">
+                                ₹<%= totalAmount %>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+                <div  class="align-middle mt-4">
+                    <% if (adminCancelReason) { %>
+                        <div class="alert alert-danger mt-1" role="alert" id="return-success">
+                             Cancelling Reason:  <%= adminCancelReason %>
+                        </div>
+                    <% } %>
+                </div>
+                
+                <div class="align-middle mt-4">
+                    <% if (orderStatus==="Return Request Placed" ) { %>
+                        <div class="alert alert-success mt-1" role="alert" id="return-success">
+                            Return Request Already Placed
+                        </div>
+                        <% } else if (orderStatus==="Delivered" ) { %>
+                            <button class="btn btn-primary" style="width: 100%; font-family: Poppins, sans-serif"
+                                onclick="showReturnReasons()" id="returnButton">RETURN
+                            </button>
+
+                            <div id="returnReasons" style="display: none; margin-top: 10px; width: 100%;">
+                                <span id="span">Select a reason for returning:</span>
+                                <select id="returnReasonOptions" onchange="checkOtherOption()" class="select-option">
+                                    <option>Reasons</option>
+                                    <option value="Damaged Product">Damaged Product</option>
+                                    <option value="Not Desired Item">Not Desired Item</option>
+                                    <!-- Add more reasons as needed -->
+                                    <option value="other">Other</option>
+                                </select>
+
+                                <div id="otherReason" style="display: none; margin-top: 10px;">
+                                    <p>Write your reason (25 words max):</p>
+                                    <input type="text" id="customReason" maxlength="25" style="width: 100%;">
+                                </div>
+
+                                <div>
+                                    <button class="btn btn-primary "
+                                        style="font-family: Poppins, sans-serif; width: 100%; margin-top: 5px;"
+                                        onclick="submitReturnReason('<%= orderId %>')" id="request-for-return">Request
+                                        For Return
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-success mt-1" role="alert" style="display: none;"
+                                id="return-success">
+                                Request for Return Placed Successfully
+                            </div>
+
+                            <% } else if (orderStatus==="Shipped" || orderStatus==="placed" ) { %>
+                                <button class="btn btn-primary" style="width: 100%; font-family: Poppins, sans-serif"
+                                    onclick="showCancelReasons()" id="cancelButton">Cancel</button>
+
+
+
+                                <div id="cancelReasons" style="display: none; margin-top: 10px; width: 100%;">
+                                    <span id="spanCancel">Select a reason for Cancelling:</span>
+                                    <select id="cancelReasonOptions" onchange="checkOtherCancelOption()"
+                                        class="select-cancel-option">
+                                        <option>Reasons</option>
+                                        <option value="Damaged Product">Damaged Product</option>
+                                        <option value="Not Desired Item">Not Desired Item</option>
+                                        <!-- Add more reasons as needed -->
+                                        <option value="other">Other</option>
+                                    </select>
+
+                                    <div id="otherCancelReason" style="display: none; margin-top: 10px;">
+                                        <p>Write your reason (25 words max):</p>
+                                        <input type="text" id="customCancelReason" maxlength="25" style="width: 100%;">
+                                    </div>
+
+                                    <div>
+                                        <button class="btn btn-primary "
+                                            style="font-family: Poppins, sans-serif; width: 100%; margin-top: 5px;"
+                                            onclick="submitCancelReason('<%= orderId %>')"
+                                            id="request-for-cancel">Order Cancel
+                                        </button>
+                                    </div>
+
+                                </div>
+
+                                <div class="alert alert-success mt-1" role="alert" style="display: none;"
+                                    id="cancel-success">
+                                    Order Cancelled
+                                </div>
+
+                                <% } %>
+                </div>
             </div>
         </div>
     </div>
+    <script>
+        function showReturnReasons() {
+            var returnReasonsDiv = document.getElementById("returnReasons");
+            returnReasonsDiv.style.display = "block";
+        }
+
+        function checkOtherOption() {
+            var returnReasonOptions = document.getElementById("returnReasonOptions");
+            var otherReasonDiv = document.getElementById("otherReason");
+            if (returnReasonOptions.value === "other") {
+                otherReasonDiv.style.display = "block";
+            } else {
+                otherReasonDiv.style.display = "none";
+            }
+        }
+
+        function submitReturnReason(orderId) {
+            var returnReasonOptions = document.getElementById("returnReasonOptions");
+            var customReasonInput = document.getElementById("customReason");
+
+            var returnReason = returnReasonOptions.value;
+
+            // Check if the selected reason is "Other" and the custom reason input is not empty
+            if (returnReason === "other" && customReasonInput.value.trim() !== "") {
+                returnReason = customReasonInput.value.trim();
+            }
+
+            console.log("Order ID:", orderId);
+            console.log("Selected Reason:", returnReason);
+
+            $.ajax({
+                url: "/return-order/" + orderId,
+                method: "post",
+                data: {
+                    message: returnReason
+                },
+                success: (response) => {
+                    if (response.status) {
+                        let returnReasonOptions = document.getElementById("returnReasonOptions");
+                        if (returnReasonOptions) {
+                            returnReasonOptions.style.display = "none";
+                        }
+                        let span = document.getElementById("span");
+                        if (span) {
+                            span.style.display = "none";
+                        }
+                        let returnButton = document.getElementById("returnButton");
+                        if (returnButton) {
+                            returnButton.style.display = "none";
+                        }
+                        let otherReason = document.getElementById("otherReason");
+                        if (otherReason) {
+                            otherReason.style.display = "none";
+                        }
+                        let requestReturnButton = document.getElementById("request-for-return");
+                        if (requestReturnButton) {
+                            requestReturnButton.style.display = "none";
+                        }
+                        let returnRequestSuccess = document.getElementById("return-success");
+                        if (returnRequestSuccess) {
+                            returnRequestSuccess.style.display = "block";
+                        }
+                    } else {
+                        console.log("Server response indicates failure.");
+                    }
+                },
+                error: (error) => {
+                    console.error("AJAX request failed: ", error);
+                }
+            });
+        }
+
+        function showCancelReasons() {
+            var cancelReasonsDiv = document.getElementById("cancelReasons");
+            if (cancelReasonsDiv) {
+                cancelReasonsDiv.style.display = "block";
+            }
+        }
+
+        function checkOtherCancelOption() {
+            var cancelReasonOptions = document.getElementById("cancelReasonOptions");
+            var otherCancelReasonDiv = document.getElementById("otherCancelReason");
+            if (cancelReasonOptions && otherCancelReasonDiv) {
+                if (cancelReasonOptions.value === "other") {
+                    otherCancelReasonDiv.style.display = "block";
+                } else {
+                    otherCancelReasonDiv.style.display = "none";
+                }
+            }
+        }
+
+        function submitCancelReason(orderId) {
+            var cancelReasonOptions = document.getElementById("cancelReasonOptions");
+            var customCancelReasonInput = document.getElementById("customCancelReason");
+
+            var cancelReason = cancelReasonOptions.value;
+
+            // Check if the selected reason is "Other" and the custom reason input is not empty
+            if (cancelReason === "other" && customCancelReasonInput.value.trim() !== "") {
+                cancelReason = customCancelReasonInput.value.trim();
+            }
+
+            console.log("Order ID:", orderId);
+            console.log("Selected Reason:", cancelReason);
+
+            $.ajax({
+                url: "/cancel-order/" + orderId,
+                method: "post",
+                data: {
+                    message: cancelReason
+                },
+                success: (response) => {
+                    if (response.status) {
+                        let cancelReasonOptions = document.getElementById("cancelReasonOptions");
+                        if (cancelReasonOptions) {
+                            cancelReasonOptions.style.display = "none";
+                        }
+                        let spanCancel = document.getElementById("spanCancel");
+                        if (spanCancel) {
+                            spanCancel.style.display = "none";
+                        }
+                        let cancelButton = document.getElementById("cancelButton");
+                        if (cancelButton) {
+                            cancelButton.style.display = "none";
+                        }
+                        let otherCancelReason = document.getElementById("otherCancelReason");
+                        if (otherCancelReason) {
+                            otherCancelReason.style.display = "none";
+                        }
+                        let requestcancelButton = document.getElementById("request-for-cancel");
+                        if (requestcancelButton) {
+                            requestcancelButton.style.display = "none";
+                        }
+                        let cancelRequestSuccess = document.getElementById("cancel-success");
+                        if (cancelRequestSuccess) {
+                            cancelRequestSuccess.style.display = "block";
+                        }
+                    } else {
+                        console.log("Server response indicates failure.");
+                    }
+                },
+                error: (error) => {
+                    console.error("AJAX request failed: ", error);
+                }
+            });
+        }
+    </script>
 </body>

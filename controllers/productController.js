@@ -149,7 +149,8 @@ const viewProducts = async (req, res, next) => {
     console.log(user);
 
     let cartCount = 0;
-
+    const products = await productHelpers.getAllProducts();
+    const categories = await productHelpers.getAllCategories();
     if (req.session.user) {
       try {
         cartCount = await userHelpers.getCartCount(req.session.user._id);
@@ -159,9 +160,8 @@ const viewProducts = async (req, res, next) => {
       }
     }
 
-    const products = await productHelpers.getAllProducts();
-    const categories = await productHelpers.getAllCategories();
-    console.log("categories is: ",categories);
+    
+    
 
     
     res.locals.cartCount = cartCount;
@@ -172,7 +172,8 @@ const viewProducts = async (req, res, next) => {
       admin: false,
       user,
       cartCount,
-      categories
+      categories,
+      // largestOffersByCategory,
     });
   } catch (error) {
     console.error(error);
@@ -203,7 +204,21 @@ const productDetails = async (req, res, next) => {
   }
 };
 
-
+const deleteProductImage=async (req,res)=>{
+  try {
+    let proId=req.params.id
+  console.log("pro Id is: ",proId);
+  let imageName=req.body.imageName
+  console.log("image name is : ",imageName);
+  await productHelpers.deleteImage(proId,imageName)
+  res.json({ status: true });
+  } catch (error) {
+    console.error(error);
+      res
+        .status(500)
+        .json({ status: false, message: "Failed to mark order as delivered." });
+  }
+}
 
 
 module.exports = {
@@ -216,5 +231,5 @@ module.exports = {
   updateProduct,
   productDetails,
   viewProducts,
-  
+  deleteProductImage,
 };

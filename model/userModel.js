@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     default:null,
   },
+  referalCode: {
+    type: String,
+    unique: true,
+  },
   // otp:{
   //  type:String,
   //  default:null,

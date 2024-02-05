@@ -2,7 +2,7 @@
     <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 150px">
         <h1 class="font-weight-semi-bold text-uppercase mb-3">Orders</h1>
         <div class="d-inline-flex">
-            <p class="m-0"><a href="">Home</a></p>
+            <p class="m-0"><a href="/">Home</a></p>
             <p class="m-0 px-2">-</p>
             <p class="m-0">Orders</p>
         </div>
@@ -22,13 +22,13 @@
                         <th>Payment</th>
                         <th>Status</th>
                         <th>View Details</th>
-                        <th>Cancel Order</th>
-                        <th>Return Order</th>
+                        <!-- <th>Cancel Order</th>
+                        <th>Return Order</th> -->
                     </tr>
                 </thead>
                 <tbody class="align-middle">
-                    <% orders.forEach(function(order){ %>
-                        <tr>
+                    <% orders.reverse().forEach(function(order, index){ %>
+                        <tr class="pagination-item">
 
                             <td class="align-middle">
                                 <%= moment(order.date).format('MMM Do YY') %>
@@ -58,23 +58,29 @@
                                     class="btn btn-primary">View
                                     Details</a>
                             </td>
-                            <td class="align-middle">
-                                <!-- <a href="/admin/cancel-order/<%= order._id %>"> -->
+                            <!-- <td class="align-middle">
+                                
                                 <button type="button" class="btn btn-primary"
                                     onclick="cancelled('<%= order._id %>')">Cancel</button>
-                                <!-- </a> -->
+                                
                             </td>
                             <td class="align-middle">
-                                <!-- <a href="/admin/cancel-order/<%= order._id %>"> -->
+                                
                                 <button type="button" class="btn btn-primary"
                                     onclick="returned('<%= order._id %>')">Return</button>
-                                <!-- </a> -->
-                            </td>
+                                
+                            </td> -->
                         </tr>
                         <% }) %>
 
                 </tbody>
             </table>
+            <div class="pagination mt-3 ">
+                <% const totalPages = Math.ceil(orders.length / 10); %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="#" class="btn btn-primary pagination-link ml-3" data-page="<%= i %>"><%= i %></a>
+                <% } %>
+            </div>
         </div>
     </div>
 </div>
@@ -134,4 +140,33 @@
                 }
             });
         }
+</script>
+<!-- Add this at the end of your HTML file, before the closing </body> tag -->
+<script>
+    // Function to show items based on the selected page
+    function showPage(pageNumber) {
+        const items = document.querySelectorAll('.pagination-item');
+        const startIndex = (pageNumber - 1) * 10;
+        const endIndex = startIndex + 10;
+
+        items.forEach((item, index) => {
+            if (index >= startIndex && index < endIndex) {
+                item.style.display = 'table-row'; // or 'block' if using div elements
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Attach click event listeners to pagination links
+    document.querySelectorAll('.pagination-link').forEach(link => {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            const pageNumber = parseInt(this.dataset.page);
+            showPage(pageNumber);
+        });
+    });
+
+    // Show the first page initially
+    showPage(1);
 </script>

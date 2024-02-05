@@ -183,27 +183,128 @@
         <div class="row no-gutters px-xl-5 pb-3 product">
             <% products.forEach(function(product) { %>
                 <% if (!product.isDeleted) { %>
+
                     <div class="col-lg-3 col-md-6 col-sm-12 pb-1 no-padding">
                         <div class="card product-item border-0 mb-4">
-                            <div
-                                class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-
-                                <% if (product.images && product.images.length> 0) { %>
-                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
+                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                <% let finalDiscount = 0; %>
+                            
+                                <% if (product.category) { %>
+                                    <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                    <% if (category && category.offer !== "0" && category.offerStart && category.offerEnd) { %>
+                                        <% const currentDateCategory = new Date(); %>
+                                        <% const offerStartDateCategory = new Date(category.offerStart); %>
+                                        <% const offerEndDateCategory = new Date(category.offerEnd); %>
+                                        <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
+                                            <% finalDiscount = Math.max(finalDiscount, category.offer); %>
+                                        <% } %>
                                     <% } %>
+                                <% } %>
+                            
+                                <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
+                                    <% const currentDate = new Date(); %>
+                                    <% const offerStartDate = new Date(product.offerStart); %>
+                                    <% const offerEndDate = new Date(product.offerEnd); %>
+                            
+                                    <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                        <% finalDiscount = Math.max(finalDiscount, product.offer); %>
+                                    <% } %>
+                                <% } %>
+                            
+                                <% if (finalDiscount > 0) { %>
+                                    <div class="ribbons-wrapper">
+                                        <div class="ribbon">
+                                            <span class="ribbon1"><span>Offer:<%= finalDiscount %>%</span></span>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            
+                                <% if (product.images && product.images.length > 0) { %>
+                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
+                                <% } %>
                             </div>
+                            
+                            
+                            
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                                 <h6 class="text-truncate mb-3 product-name">
                                     <%= product.name %>
                                 </h6>
                                 <div class="d-flex justify-content-center">
-                                    <h6>₹<%= product.price %>.00</h6>
-                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                </div>
+                                    <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
+                                      <% const currentDate = new Date(); %>
+                                      <% const offerStartDate = new Date(product.offerStart); %>
+                                      <% const offerEndDate = new Date(product.offerEnd); %>
+                                  
+                                      <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                        <% const productDiscountedPrice = (product.price - (product.price * product.offer / 100)).toFixed(2); %>
+                                  
+                                        <% if (product.category) { %>
+                                          <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                  
+                                          <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
+                                            <% const currentDateCategory = new Date(); %>
+                                            <% const offerStartDateCategory = new Date(category.offerStart); %>
+                                            <% const offerEndDateCategory = new Date(category.offerEnd); %>
+                                  
+                                            <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
+                                              <% const discountedPriceWithCategoryOffer = (product.price - (product.price * category.offer / 100)).toFixed(2); %>
+                                  
+                                              <% if (parseFloat(productDiscountedPrice) < parseFloat(discountedPriceWithCategoryOffer)) { %>
+                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %></h6>
+                                              <% } else { %>
+                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                <h6 style="margin-left: 5px;">₹<%= discountedPriceWithCategoryOffer %></h6>
+                                              <% } %>
+                                  
+                                            <% } else { %>
+                                              <h6>₹<%= product.price %>.00</h6>
+                                            <% } %>
+                                  
+                                          <% } else { %>
+                                            <h6>₹<%= product.price %>.00</h6>
+                                          <% } %>
+                                  
+                                        <% } else { %>
+                                          <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                          <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %></h6>
+                                        <% } %>
+                                  
+                                      <% } else { %>
+                                        <h6>₹<%= product.price %>.00</h6>
+                                      <% } %>
+                                    <% } else if (product.category) { %>
+                                      <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                      <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
+                                        <% const currentDate = new Date(); %>
+                                        <% const offerStartDate = new Date(category.offerStart); %>
+                                        <% const offerEndDate = new Date(category.offerEnd); %>
+                                  
+                                        <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                          <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                          <h6 style="margin-left: 5px;">₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
+                                        <% } else { %>
+                                          <h6>₹<%= product.price %>.00</h6>
+                                        <% } %>
+                                  
+                                      <% } else { %>
+                                        <h6>₹<%= product.price %>.00</h6>
+                                      <% } %>
+                                    <% } else { %>
+                                      <h6>₹<%= product.price %>.00</h6>
+                                    <% } %>
+                                  </div>
+                                  
+                                  
+                                
+                                
+
                                 <h6 class="text-truncate mb-3">
                                     <%= product.description %>
                                 </h6>
-                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>">
+                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>"
+                                    style="font-weight: 300;">
                                     Category:<%= product.category %>
                                 </h6>
                             </div>
@@ -257,25 +358,103 @@
                 <% if (!product.isDeleted) { %>
                     <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
                         <div class="card product-item border-0 mb-4">
-                            <div
-                                class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-
-                                <% if (product.images && product.images.length> 0) { %>
-                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
+                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                <% let finalDiscount = 0; %>
+                            
+                                <% if (product.category) { %>
+                                    <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                    <% if (category && category.offer !== "0" && category.offerStart && category.offerEnd) { %>
+                                        <% const currentDateCategory = new Date(); %>
+                                        <% const offerStartDateCategory = new Date(category.offerStart); %>
+                                        <% const offerEndDateCategory = new Date(category.offerEnd); %>
+                                        <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
+                                            <% finalDiscount = Math.max(finalDiscount, category.offer); %>
+                                        <% } %>
                                     <% } %>
+                                <% } %>
+                            
+                                <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
+                                    <% const currentDate = new Date(); %>
+                                    <% const offerStartDate = new Date(product.offerStart); %>
+                                    <% const offerEndDate = new Date(product.offerEnd); %>
+                            
+                                    <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                        <% finalDiscount = Math.max(finalDiscount, product.offer); %>
+                                    <% } %>
+                                <% } %>
+                            
+                                <% if (finalDiscount > 0) { %>
+                                    <div class="ribbons-wrapper">
+                                        <div class="ribbon">
+                                            <span class="ribbon1"><span>Offer:<%= finalDiscount %>%</span></span>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            
+                                <% if (product.images && product.images.length > 0) { %>
+                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
+                                <% } %>
                             </div>
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                                 <h6 class="text-truncate mb-3 product-name">
                                     <%= product.name %>
                                 </h6>
-                                <div class="d-flex justify-content-center">
-                                    <h6>₹<%= product.price %>.00</h6>
-                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                 <div class="d-flex justify-content-center">
+                                    <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
+                                        <% const currentDate = new Date(); %>
+                                        <% const offerStartDate = new Date(product.offerStart); %>
+                                        <% const offerEndDate = new Date(product.offerEnd); %>
+                                
+                                        <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                            <% const productDiscountedPrice = (product.price - (product.price * product.offer / 100)).toFixed(2); %>
+                                
+                                            <% if (product.category) { %>
+                                                <% console.log("product category is:", product.category); %>
+                                                <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                                <div>
+                                                    <% console.log("Category:", category); %>
+                                                </div>
+                                                <% if (category && category.offer > product.offer) { %>
+                                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                    <h6 style="margin-left: 5px;">₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
+                                                <% } else { %>
+                                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                    <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %> </h6>
+                                                <% } %>
+                                            <% } else { %>
+                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %> </h6>
+                                            <% } %>
+                                
+                                        <% } else { %>
+                                            <h6>₹<%= product.price %>.00</h6>
+                                        <% } %>
+                                    <% } else if (product.category) { %>
+                                        <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
+                                        <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
+                                            <% const currentDate = new Date(); %>
+                                            <% const offerStartDate = new Date(category.offerStart); %>
+                                            <% const offerEndDate = new Date(category.offerEnd); %>
+                                            <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                                <h6 style="margin-left: 5px;">
+                                                 ₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
+                                            <% } else { %>
+                                                <h6>₹<%= product.price %>.00</h6>
+                                            <% } %>
+                                        <% } else { %>
+                                            <h6>₹<%= product.price %>.00</h6>
+                                        <% } %>
+                                    <% } else { %>
+                                        <h6>₹<%= product.price %>.00</h6>
+                                    <% } %>
                                 </div>
+
                                 <h6 class="text-truncate mb-3">
                                     <%= product.description %>
                                 </h6>
-                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>">
+                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>"
+                                    style="font-weight: 300;">
                                     Category:<%= product.category %>
                                 </h6>
                             </div>
@@ -317,7 +496,7 @@
                         let value = productName.innerText || productName.textContent;
                         return value.toUpperCase().includes(searchValue);
                     });
-                 console.log("Found is : ",found);
+                console.log("Found is : ", found);
                 column.style.display = found ? "flex" : "none";
             });
 
@@ -333,13 +512,11 @@
         categoryButtons.forEach((button) => {
             button.addEventListener("click", (event) => {
                 event.preventDefault();
-
-                // Get the category value from the data-category attribute
                 let selectedCategory = button.getAttribute('data-category');
 
                 console.log("Category is: ", selectedCategory);
 
-                // Loop through product columns and filter products based on category
+
                 productColumns.forEach((column) => {
                     let products = column.querySelectorAll('.card');
                     products.forEach((product) => {

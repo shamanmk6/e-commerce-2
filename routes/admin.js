@@ -19,6 +19,7 @@ const {
   restoreProduct,
   editProduct,
   updateProduct,
+  deleteProductImage,
 } = require("../controllers/productController");
 const{
   getCoupons,
@@ -32,6 +33,8 @@ const{
     category,
     addCategory ,
     categoryAdding,
+    editCategory,
+    updateCategory,
 }=require('../controllers/categoryController.js')
 const{
   getOrders,
@@ -39,6 +42,7 @@ const{
   deliveredOrder,
   shippedOrder,
   orderedItems,
+  returnOrder,
 }=require('../controllers/orderController.js')
 
 /* GET home page. */
@@ -64,10 +68,13 @@ router.get("/category", isAdmin, category);
 
 router.route("/add-category").get(isAdmin,addCategory).post(isAdmin,categoryAdding);
 
+router.get("/edit-category/:id", isAdmin, editCategory);
+router.post("/edit-category/:id", isAdmin, updateCategory);
+
 router.get("/orders", isAdmin, getOrders);
 
-router.get("/cancel-order/:id",isAdmin, cancelOrder);
-
+router.post("/cancel-order/:id",isAdmin, cancelOrder);
+router.post("/return-order/:id",isAdmin, returnOrder);
 router.get("/delivered-order/:id",isAdmin, deliveredOrder);
 
 router.get("/shipped-order/:id",isAdmin, shippedOrder);
@@ -81,6 +88,8 @@ router.post("/add-coupons",isAdmin,createCoupon)
 
 router.get("/edit-coupon/:id",isAdmin,editCoupon);
 router.post("/edit-coupon/:id",isAdmin,updateCoupon);
+
+router.post("/delete-image/:id",isAdmin,deleteProductImage);
 
 
 module.exports = router;

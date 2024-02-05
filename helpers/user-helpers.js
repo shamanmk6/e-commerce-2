@@ -16,11 +16,23 @@ var instance = new Razorpay({
   key_id: "rzp_test_pwhvE482E5y8F4",
   key_secret: "yEURCf7rlGOsDvHhLOE6uFqm",
 });
+const generateReferralCode = () => {
+  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let referralCode = "";
+
+  for (let i = 0; i < 8; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    referralCode += characters.charAt(randomIndex);
+  }
+
+  return referralCode;
+};
 
 module.exports = {
   doSignup: (userData) => {
     return new Promise(async (resolve, reject) => {
-      const { name, email, password, confirmPwd } = userData;
+      const { name, email, password, confirmPwd, referal } = userData;
+      console.log("refersl: ", referal);
       const existingUser = await db
         .getDatabase()
         .collection(collection.USER_COLLECTION)
@@ -31,6 +43,22 @@ module.exports = {
           message: "User with this email already exists",
         });
       } else {
+        const existingUserWithReferral = await db
+          .getDatabase()
+          .collection(collection.USER_COLLECTION)
+          .findOne({ referalCode: referal });
+        console.log("exixsting user: ", existingUserWithReferral);
+        if (existingUserWithReferral) {
+          const userId = existingUserWithReferral._id;
+
+          await db
+            .getDatabase()
+            .collection(collection.WALLET_COLLECTION)
+            .updateOne(
+              { userId: userId },
+              { $inc: { totalAmountWallet: 200, referalAmount: 200 } }
+            );
+        }
         if (password == confirmPwd) {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -40,16 +68,30 @@ module.exports = {
             email,
             password: hashedPassword,
             isVerified: 0,
+            referalCode: generateReferralCode(),
           });
 
           db.getDatabase()
             .collection(collection.USER_COLLECTION)
             .insertOne(newUser)
-            .then((data) => {
+            .then(async (data) => {
+              const userId = data.insertedId;
+              if (existingUserWithReferral) {
+                await db
+                  .getDatabase()
+                  .collection(collection.WALLET_COLLECTION)
+                  .insertOne({
+                    userId: userId,
+                    cancelledOrders: [],
+                    referalAmount: 200,
+                    totalAmountWallet: 200,
+                  });
+              }
               const user = {
                 name: newUser.name,
                 email: newUser.email,
                 Id: data.insertedId,
+                referal: newUser.referal,
               };
               resolve(user);
             });
@@ -182,7 +224,6 @@ module.exports = {
   categoryAdding: (categoryData) => {
     return new Promise(async (resolve, reject) => {
       try {
-        // Check if category is empty or whitespace
         if (!categoryData.category.trim()) {
           resolve({
             success: false,
@@ -191,7 +232,6 @@ module.exports = {
           return;
         }
 
-        // Check if category is unique (case-insensitive)
         const existingCategory = await db
           .getDatabase()
           .collection(collection.CATEGORY_COLLECTION)
@@ -204,10 +244,11 @@ module.exports = {
           return;
         }
 
-        // If validations pass, proceed with insertion
         const newCategory = new Category({
-          title: categoryData.title,
           category: categoryData.category,
+          offer: categoryData.offer,
+          offerStart: categoryData.offerStart,
+          offerEnd: categoryData.offerEnd,
         });
 
         let data = await db
@@ -434,75 +475,163 @@ module.exports = {
   },
   getTotalAmount: (userId) => {
     return new Promise(async (resolve, reject) => {
-      let total = await db
-        .getDatabase()
-        .collection(collection.CART_COLLECTION)
-        .aggregate([
-          {
-            $match: { user: new objectId(userId) },
-          },
-          {
-            $unwind: "$products",
-          },
-          {
-            $project: {
-              item: "$products.item",
-              quantity: { $toInt: "$products.quantity" },
+      try {
+        let total = await db
+          .getDatabase()
+          .collection(collection.CART_COLLECTION)
+          .aggregate([
+            {
+              $match: { user: new objectId(userId) },
             },
-          },
-          {
-            $lookup: {
-              from: collection.PRODUCT_COLLECTION,
-              localField: "item",
-              foreignField: "_id",
-              as: "product",
+            {
+              $unwind: "$products",
             },
-          },
-          {
-            $project: {
-              item: 1,
-              quantity: 1,
-              product: { $arrayElemAt: ["$product", 0] },
+            {
+              $lookup: {
+                from: collection.PRODUCT_COLLECTION,
+                localField: "products.item",
+                foreignField: "_id",
+                as: "product",
+              },
             },
-          },
-          {
-            $project: {
-              quantity: 1,
-              "product.price": { $toDouble: "$product.price" }, // Convert to double
+            {
+              $lookup: {
+                from: collection.CATEGORY_COLLECTION,
+                localField: "product.category",
+                foreignField: "category",
+                as: "category",
+              },
             },
-          },
-          {
-            $group: {
-              _id: null,
-              total: { $sum: { $multiply: ["$quantity", "$product.price"] } },
+            {
+              $addFields: {
+                quantity: "$products.quantity",
+                product: { $arrayElemAt: ["$product", 0] },
+                category: { $arrayElemAt: ["$category", 0] },
+              },
             },
-          },
-        ])
+            {
+              $addFields: {
+                "product.price": { $toDouble: "$product.price" },
+                "product.offer": { $toInt: "$product.offer" },
+                "product.offerStart": { $toDate: "$product.offerStart" },
+                "product.offerEnd": { $toDate: "$product.offerEnd" },
+                "category.offer": { $toInt: "$category.offer" },
+                "category.offerStart": { $toDate: "$category.offerStart" },
+                "category.offerEnd": { $toDate: "$category.offerEnd" },
+              },
+            },
+            {
+              $addFields: {
+                discountedPrice: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $ne: ["$product.offer", 0] },
+                        { $gte: [new Date(), "$product.offerStart"] },
+                        { $lte: [new Date(), "$product.offerEnd"] },
+                      ],
+                    },
+                    then: {
+                      $cond: {
+                        if: {
+                          $and: [
+                            { $ne: ["$category.offer", 0] },
+                            { $gte: [new Date(), "$category.offerStart"] },
+                            { $lte: [new Date(), "$category.offerEnd"] },
+                            { $gt: ["$category.offer", "$product.offer"] },
+                          ],
+                        },
+                        then: {
+                          $multiply: [
+                            "$quantity",
+                            {
+                              $subtract: [
+                                1,
+                                { $divide: ["$category.offer", 100] },
+                              ],
+                            },
+                            "$product.price",
+                          ],
+                        },
+                        else: {
+                          $multiply: [
+                            "$quantity",
+                            {
+                              $subtract: [
+                                1,
+                                { $divide: ["$product.offer", 100] },
+                              ],
+                            },
+                            "$product.price",
+                          ],
+                        },
+                      },
+                    },
+                    else: {
+                      $cond: {
+                        if: {
+                          $and: [
+                            { $ne: ["$category.offer", 0] },
+                            { $gte: [new Date(), "$category.offerStart"] },
+                            { $lte: [new Date(), "$category.offerEnd"] },
+                          ],
+                        },
+                        then: {
+                          $multiply: [
+                            "$quantity",
+                            {
+                              $subtract: [
+                                1,
+                                { $divide: ["$category.offer", 100] },
+                              ],
+                            },
+                            "$product.price",
+                          ],
+                        },
+                        else: {
+                          $multiply: ["$quantity", "$product.price"],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                total: { $sum: "$discountedPrice" },
+              },
+            },
+          ])
+          .toArray();
 
-        .toArray();
-      if (total.length > 0 && total[0].total !== undefined) {
-        console.log("total is:", total[0].total);
-        await db
-          .getDatabase()
-          .collection(collection.CART_COLLECTION)
-          .updateOne(
-            { user: new objectId(userId) },
-            { $set: { totalAmount: total[0].total } }
-          );
-        resolve(total[0].total);
-      } else {
-        console.log("Total not found or undefined");
-        await db
-          .getDatabase()
-          .collection(collection.CART_COLLECTION)
-          .updateOne(
-            { user: new objectId(userId) },
-            { $set: { totalAmount: 0 } }
-          );
-        resolve("Cart is Empty");
+        if (total.length > 0 && total[0].total !== undefined) {
+          await db
+            .getDatabase()
+            .collection(collection.CART_COLLECTION)
+            .updateOne(
+              { user: new objectId(userId) },
+              { $set: { totalAmount: total[0].total } }
+            );
+          resolve(total[0].total);
+        } else {
+          await db
+            .getDatabase()
+            .collection(collection.CART_COLLECTION)
+            .updateOne(
+              { user: new objectId(userId) },
+              { $set: { totalAmount: 0 } }
+            );
+          resolve("Cart is Empty");
+        }
+      } catch (error) {
+        console.error("Error in getTotalAmount:", error);
+        reject(error);
       }
     });
   },
+
   totalAmount: (userId) => {
     return new Promise(async (resolve, reject) => {
       const cart = await db
@@ -597,6 +726,9 @@ module.exports = {
                 item: "$products.item",
                 quantity: "$products.quantity",
                 totalAmount: "$totalAmount",
+                status: "$status",
+                returnReason: "$returnReason",
+                adminCancelReason: "$adminCancelReason",
                 product: { $arrayElemAt: ["$product", 0] },
               },
             },
@@ -605,16 +737,24 @@ module.exports = {
 
         if (orderItems.length > 0) {
           let totalAmount = orderItems[0].totalAmount;
-
+          let status = orderItems[0].status;
+          let returnReason = orderItems[0].returnReason;
+          let adminCancelReason = orderItems[0].adminCancelReason;
           let products = orderItems.map((item) => ({
             item: item.item,
             quantity: item.quantity,
             product: item.product,
           }));
 
-          resolve({ products, totalAmount });
+          resolve({
+            products,
+            totalAmount,
+            status,
+            returnReason,
+            adminCancelReason,
+          });
         } else {
-          resolve({ products: [], totalAmount: 0 });
+          resolve({ products: [], totalAmount: 0, status: "" });
         }
       } catch (error) {
         console.error("Error in aggregation pipeline:", error);
@@ -802,8 +942,6 @@ module.exports = {
           resolve({ success: false, message: "Coupon must be unique." });
           return;
         }
-
-        // If validations pass, proceed with insertion
         const newCoupon = new Coupon({
           name: couponData.name,
           expiry: couponData.expiry,
@@ -883,28 +1021,180 @@ module.exports = {
   },
   getCoupon: (couponId) => {
     return new Promise((resolve, reject) => {
-
-      db.getDatabase().collection(collection.COUPON_COLLECTION).findOne({_id:new objectId(couponId)}).then((coupon)=>{
+      db.getDatabase()
+        .collection(collection.COUPON_COLLECTION)
+        .findOne({ _id: new objectId(couponId) })
+        .then((coupon) => {
           resolve(coupon);
-      })
+        });
     });
   },
   updateCoupon: (details, couponId) => {
     return new Promise((resolve, reject) => {
-      db.getDatabase()
-        .collection(collection.COUPON_COLLECTION)
-        .updateOne(
-          { _id: new objectId(couponId) },
-          {
-            $set: {
-              name: details.name,
-              expiry: details.expiry,
-              discount: details.discount,
-            },
+      const couponCollection = db
+        .getDatabase()
+        .collection(collection.COUPON_COLLECTION);
+
+      // Find the existing coupon by couponId
+      couponCollection
+        .findOne({ _id: new objectId(couponId) })
+        .then((existingCoupon) => {
+          if (!existingCoupon) {
+            reject("Coupon not found");
+            return;
           }
-        )
-        .then(() => {
-          resolve();
+
+          // Check if the coupon name is being changed
+          if (existingCoupon.name !== details.name) {
+            // Check if the new coupon name already exists for another coupon
+            couponCollection
+              .findOne({
+                name: details.name,
+                _id: { $ne: new objectId(couponId) },
+              })
+              .then((duplicateCoupon) => {
+                if (duplicateCoupon) {
+                  // Coupon name is already taken by another coupon
+                  reject("Coupon with the same name already exists");
+                } else {
+                  // Update the coupon properties
+                  couponCollection
+                    .updateOne(
+                      { _id: new objectId(couponId) },
+                      {
+                        $set: {
+                          name: details.name,
+                          expiry: details.expiry,
+                          discount: details.discount,
+                        },
+                      }
+                    )
+                    .then(() => {
+                      resolve();
+                    })
+                    .catch((error) => {
+                      reject(error);
+                    });
+                }
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          } else {
+            // Coupon name is not being changed, update the coupon properties
+            couponCollection
+              .updateOne(
+                { _id: new objectId(couponId) },
+                {
+                  $set: {
+                    expiry: details.expiry,
+                    discount: details.discount,
+                  },
+                }
+              )
+              .then(() => {
+                resolve();
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          }
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  getWallet: (userId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.WALLET_COLLECTION)
+        .findOne({ userId: new objectId(userId) })
+        .then((wallet) => {
+          resolve(wallet);
+        });
+    });
+  },
+  getCategoryDetails: (categoryId) => {
+    return new Promise((resolve, reject) => {
+      db.getDatabase()
+        .collection(collection.CATEGORY_COLLECTION)
+        .findOne({ _id: new objectId(categoryId) })
+        .then((category) => {
+          resolve(category);
+        });
+    });
+  },
+  updateCategory: (categoryDetails, categoryId) => {
+    return new Promise((resolve, reject) => {
+      const categoryCollection = db
+        .getDatabase()
+        .collection(collection.CATEGORY_COLLECTION);
+
+      categoryCollection
+        .findOne({ _id: new objectId(categoryId) })
+        .then((existingCategory) => {
+          if (!existingCategory) {
+            reesolve("Category not found");
+            return;
+          }
+
+          if (existingCategory.category !== categoryDetails.category) {
+            categoryCollection
+              .findOne({
+                category: categoryDetails.category,
+                _id: { $ne: new objectId(categoryId) },
+              })
+              .then((duplicateCategory) => {
+                if (duplicateCategory) {
+                  resolve("Category name already exists");
+                } else {
+                  categoryCollection
+                    .updateOne(
+                      { _id: new objectId(categoryId) },
+                      {
+                        $set: {
+                          category: categoryDetails.category,
+                          offer: categoryDetails.offer,
+                          offerStart: categoryDetails.offerStart,
+                          offerEnd: categoryDetails.offerEnd,
+                        },
+                      }
+                    )
+                    .then(() => {
+                      resolve();
+                    })
+                    .catch((error) => {
+                      reject(error);
+                    });
+                }
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          } else {
+            // Category name is not being changed, update the category properties
+            categoryCollection
+              .updateOne(
+                { _id: new objectId(categoryId) },
+                {
+                  $set: {
+                    offer: categoryDetails.offer,
+                    offerStart: categoryDetails.offerStart,
+                    offerEnd: categoryDetails.offerEnd,
+                  },
+                }
+              )
+              .then(() => {
+                resolve();
+              })
+              .catch((error) => {
+                reject(error);
+              });
+          }
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },

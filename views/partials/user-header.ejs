@@ -132,7 +132,9 @@
                             <% if (req.url !=='/wallet' && !req.url.startsWith('/details') && req.url !=='/cart' &&
                                 req.url !=='/place-order' && req.url !=='/profile' && req.url !=='/cart' &&
                                 !req.url.startsWith('/order-success') && !req.url.startsWith('/view-ordered-products')
-                                && !req.url.startsWith('/edit-profile') && !req.url.startsWith('/view-ordered-product-list')){ %>
+                                && !req.url.startsWith('/edit-profile') &&
+                                !req.url.startsWith('/view-ordered-product-list')&& req.url !==('/apply-coupon') &&
+                                (!req.url.startsWith('/enter-otp')) ){ %>
                                 <a class="btn shadow-none d-flex align-items-center justify-content-between bg-primary text-white w-100"
                                     data-toggle="collapse" href="#navbar-vertical"
                                     style="height: 65px; margin-top: -1px; padding: 0 30px;">
@@ -143,10 +145,34 @@
                                     id="navbar-vertical" style="width: 325px;">
                                     <div class="navbar-nav w-100 overflow-hidden" style="height: 100%">
                                         <% for (let i=0; i < categories.length; i++) { %>
+
                                             <a href="#" class="nav-item nav-link btn category-button"
                                                 data-category="<%= categories[i].category %>">
-                                                <%= categories[i].category %>
+
+                                             <%= categories[i].category %>
+                                            <% if (categories[i].offer !== "0" &&
+                                                    categories[i].offer !== "" &&
+                                                    categories[i].offerStart &&
+                                                    categories[i].offerEnd &&
+                                                    categories[i].offer !== undefined &&
+                                                    categories[i].offer !== null &&
+                                                    categories[i].offer.trim() !== "")
+                                             { %>
+                                                 <% const currentDate = new Date(); %>
+                                                 <% const offerStartDate = new Date(categories[i].offerStart); %>
+                                                 <% const offerEndDate = new Date(categories[i].offerEnd); %>
+                                             
+                                                 <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
+                                                     <span class="badge badge-primary align-left">
+                                                         <%= categories[i].offer %>% Off
+                                                     </span>
+                                                 <% } %>
+                                             <% } %>
+
+
+
                                             </a>
+
                                             <% } %>
                                     </div>
                                 </nav>
@@ -167,8 +193,8 @@
                             <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                                 <div class="navbar-nav mr-auto py-0">
                                     <a href="/" class="nav-item nav-link active">Home</a>
-                                    <a href="shop.html" class="nav-item nav-link">Shop</a>
-                                    <a href="detail.html" class="nav-item nav-link">Shop Detail</a>
+                                    <a href="/" class="nav-item nav-link">Shop</a>
+                                    <a href="/" class="nav-item nav-link">Shop Detail</a>
                                     <a href="/wallet" class="nav-item nav-link">Wallet</a>
                                     <div class="nav-item dropdown">
                                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
@@ -181,7 +207,7 @@
                                                 <% } %>
                                         </div>
                                     </div>
-                                    <a href="contact.html" class="nav-item nav-link">Contact</a>
+                                    <a href="/" class="nav-item nav-link">Contact</a>
                                 </div>
                                 <!-- Check if user is defined before accessing its properties -->
                                 <% if (typeof user !=='undefined' && user) { %>

@@ -1,12 +1,10 @@
-
-
 <head>
-   
-    
+
+
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-   
+
 </head>
 
 <body>
@@ -19,7 +17,7 @@
                 </ol>
             </div>
         </div>
-        
+
         <div class="container-fluid" id="products">
             <div class="row">
                 <div class="col-12">
@@ -35,6 +33,9 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Price</th>
+                                        <th>Offer</th>
+                                        <th>Offer Price</th>
+                                        <th>OfferDate</th>
                                         <th>Category</th>
                                         <th>Quantity</th>
                                         <th>Description</th>
@@ -46,42 +47,65 @@
                                 <tbody>
                                     <% products.forEach(function(product){ %>
                                         <tr>
-                                            <td>
+                                            <td class="align-middle">
                                                 <%= product.name %>
                                             </td>
-                                            <td>
-                                                <%= product.price %>
+                                            <td class="align-middle">
+                                                <%= product.price %> ₹
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
+                                                <span style="margin-bottom: 25px;"><%= product.offer %>%</span>
+                                                
+                                            </td>
+
+                                            <td class="align-middle">
+                                                <% if (product.offer) { %>
+                                                    <%= (product.price - (product.price * product.offer /
+                                                        100)).toFixed(2) %>₹
+                                                        <% } else { %>
+                                                            <%= product.price %>₹
+                                                                <% } %>
+                                            </td>
+                                           
+                                            <td class="align-middle">
+                                                <h6>Starts:</h6> <span><%= product.offerStart %></span>
+                                                <h6>Ends:</h6><span><%= product.offerEnd %></span> 
+                                            </td>
+                                            
+
+                                            <td class="align-middle">
                                                 <%= product.category %>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <%= product.quantity %>
                                             </td>
-                                            <td>
+
+                                            <td class="align-middle">
                                                 <%= product.description %>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <% product.images.forEach(function(image){ %>
                                                     <img style="width: 50px; height: 50px;"
                                                         src="/product-images/<%= image %>" alt="">
                                                     <% }) %>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <a href="/admin/edit-product/<%= product._id %>">
                                                     <button type="button" class="btn btn-primary">Edit</button>
                                                 </a>
                                             </td>
-                                            <td>
+                                            <td class="align-middle">
                                                 <% if (!product.isDeleted) { %>
                                                     <a>
-                                                        <button type="button" class="btn btn-danger delete-restore-button"
+                                                        <button type="button"
+                                                            class="btn btn-danger delete-restore-button"
                                                             data-id="<%= product._id %>"
                                                             onclick="remove('<%= product._id %>')">Delete</button>
                                                     </a>
                                                     <% } else { %>
                                                         <a>
-                                                            <button type="button" class="btn btn-success delete-restore-button"
+                                                            <button type="button"
+                                                                class="btn btn-success delete-restore-button"
                                                                 data-id="<%= product._id %>"
                                                                 onclick="restore('<%= product._id %>')">Restore</button>
                                                         </a>
@@ -90,18 +114,7 @@
                                         </tr>
                                         <% }) %>
                                 </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Category</th>
-                                        <th>Quantity</th>
-                                        <th>Description</th>
-                                        <th>Image</th>
-                                        <th>Edit</th>
-                                        <th>Delete/Restore</th>
-                                    </tr>
-                                </tfoot>
+
                             </table>
                         </div>
                     </div>
@@ -109,7 +122,7 @@
             </div>
         </div>
     </div>
-   
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
@@ -121,91 +134,90 @@
         crossorigin="anonymous"></script>
     <script>
         function remove(id) {
-                console.log('Deleting product with ID:', id);
-                if (id) {
-                    Swal.fire({
-                        title: 'Confirm delete',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#FF0000',
-                        cancelButtonColor: '#008000',
-                        confirmButtonText: 'Are you sure want to delete this product?'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $.ajax({
-                                url: '/admin/delete-product/' + id,
-                                type: 'get',
-                                success: function (response) {
-                                    if (response.success) {
-                                        Swal.fire('Deleted!', 'Product has been Deleted.', 'success');
-                                        updateButtonDisplay(id, true);
-                                    } else {
-                                        Swal.fire('Error', 'Failed to block user.', 'error');
-                                    }
-                                },
-                                error: function () {
-                                    Swal.fire('Error', 'Something went wrong.', 'error');
-                                }
-                            });
-                        }
-                    });
-                } else {
-                    console.error("product id is undefined");
-                }
-            }
-         function restore(id) {
+            console.log('Deleting product with ID:', id);
+            if (id) {
                 Swal.fire({
-                    title: 'Confirm Restore',
+                    title: 'Confirm delete',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#FF0000',
-                    cancelButtonColor: '	#008000',
-                    confirmButtonText: 'Are you sure want to Restore this product?'
+                    cancelButtonColor: '#008000',
+                    confirmButtonText: 'Are you sure want to delete this product?'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/admin/restore-product/' + id,
+                            url: '/admin/delete-product/' + id,
                             type: 'get',
                             success: function (response) {
-                                console.log("success:", response);
-                                if (response && response.success) {
-                                    Swal.fire('Restored!', 'Product has been Restored.', 'success');
-                                    updateButtonDisplay(id, false);
+                                if (response.success) {
+                                    Swal.fire('Deleted!', 'Product has been Deleted.', 'success');
+                                    updateButtonDisplay(id, true);
                                 } else {
-                                    Swal.fire('Error', response.message || 'Failed to restore product.', 'error');
+                                    Swal.fire('Error', 'Failed to block user.', 'error');
                                 }
                             },
                             error: function () {
-                                console.log("Error: ", xhr, status, error);
                                 Swal.fire('Error', 'Something went wrong.', 'error');
                             }
                         });
                     }
                 });
+            } else {
+                console.error("product id is undefined");
             }
-
-            
-       function updateButtonDisplay(id,isDeleted){
-        var buttons=document.querySelectorAll('.delete-restore-button[data-id="' + id + '"]');
-        console.log("Buttons are: ",buttons);
-        buttons.forEach(function (button) {
-            if(isDeleted){
-                button.innerText='Restore';
-                button.setAttribute('onclick','restore("' + id + '")')
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-success')
-            }else{
-                button.innerText='Delete';
-                button.setAttribute('onclick','remove("' + id + '")')
-                button.classList.remove('btn-success');
-                button.classList.add('btn-danger')
-            }
+        }
+        function restore(id) {
+            Swal.fire({
+                title: 'Confirm Restore',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF0000',
+                cancelButtonColor: '	#008000',
+                confirmButtonText: 'Are you sure want to Restore this product?'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/admin/restore-product/' + id,
+                        type: 'get',
+                        success: function (response) {
+                            console.log("success:", response);
+                            if (response && response.success) {
+                                Swal.fire('Restored!', 'Product has been Restored.', 'success');
+                                updateButtonDisplay(id, false);
+                            } else {
+                                Swal.fire('Error', response.message || 'Failed to restore product.', 'error');
+                            }
+                        },
+                        error: function () {
+                            console.log("Error: ", xhr, status, error);
+                            Swal.fire('Error', 'Something went wrong.', 'error');
+                        }
+                    });
+                }
             });
-       }
+        }
+
+
+        function updateButtonDisplay(id, isDeleted) {
+            var buttons = document.querySelectorAll('.delete-restore-button[data-id="' + id + '"]');
+            console.log("Buttons are: ", buttons);
+            buttons.forEach(function (button) {
+                if (isDeleted) {
+                    button.innerText = 'Restore';
+                    button.setAttribute('onclick', 'restore("' + id + '")')
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-success')
+                } else {
+                    button.innerText = 'Delete';
+                    button.setAttribute('onclick', 'remove("' + id + '")')
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-danger')
+                }
+            });
+        }
     </script>
-     
+
 
 
 
 </body>
-
