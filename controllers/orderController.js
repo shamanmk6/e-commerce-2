@@ -1,3 +1,4 @@
+
 const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
 const moment = require("moment");
@@ -73,40 +74,51 @@ const getOrders = async (req, res) => {
       console.log("order id is : ", orderId);
   
       let orderDetails = await userHelpers.getOrderedProducts(orderId);
-  
+      let order=await userHelpers.getOrder(orderId)
       let products = orderDetails.products;
       let totalAmount = orderDetails.totalAmount;
   
       console.log("Products is ", products);
       console.log("Total Amount is ", totalAmount);
   
-      res.render("admin/view-order-products", {admin:true, products, totalAmount });
+      res.render("admin/view-order-products", {admin:true, products, totalAmount,order,moment });
     } catch (error) {
       console.error("Error fetching ordered products:", error);
       res.redirect("/");
     }
   };
   const placeOrder = async (req, res) => {
-    const user = req.session.user;
+    try {
+      const user = req.session.user;
+      const total=req.params.totalValue
+      console.log("total value at place order is: ",total);
     const categories = await productHelpers.getAllCategories();
     req.session.authorized = true;
     const isAuthorized = req.session.authorized;
-    let total = await userHelpers.totalAmount(req.session.user._id);
+    // let total = await userHelpers.totalAmount(req.session.user._id);
     let userDetails = await userHelpers.getUserDetails(req.session.user._id);
+    console.log("userDetails",userDetails);
     let cartCount = await userHelpers.getCartCount(req.session.user._id);
     res.render("user/order", { total, user, isAuthorized, userDetails,categories,cartCount  });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    }
+    
   };
   const orderSuccess = async (req, res) => {
-    const orderId = req.query.orderId;
-    const user = req.session.user;
-    const categories = await productHelpers.getAllCategories();
-    console.log("order id is : ", orderId);
-    // let products = await userHelpers.getOrderedProducts(orderId);
-    // console.log("orderes products are: " + products);
-    res.render("user/order-success-page", { user, orderId,categories });
-    // const user = req.session.user;
-    // let orders = await userHelpers.getUserOrders(req.session.user._id);
-    // res.render("user/order-success", { user, orders });
+    try {
+      const orderId = req.query.orderId;
+      const user = req.session.user;
+      const categories = await productHelpers.getAllCategories();
+      console.log("order id is : ", orderId);
+      res.render("user/order-success-page", { user, orderId,categories });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    }
+   
+  
   };
   const getOrderedProducts = async (req, res) => {
     try {
@@ -116,32 +128,34 @@ const getOrders = async (req, res) => {
       console.log("order id is : ", orderId);
   
       let orderDetails = await userHelpers.getOrderedProducts(orderId);
-      
+      let order=await userHelpers.getOrder(orderId)
+      console.log("order is: ",order);
       let products = orderDetails.products;
       let totalAmount = orderDetails.totalAmount;
       let orderStatus = orderDetails.status;
       let returnRequest = orderDetails.returnRequest;
       let adminCancelReason = orderDetails.adminCancelReason;
-      
       console.log("order details is: ",orderDetails);
       console.log("Products is ", products);
       console.log("Total Amount is ", totalAmount);
   
-      res.render("user/view-order-products", { user, products, totalAmount,orderStatus,orderId,returnRequest,adminCancelReason});
+      res.render("user/view-order-products", { user, products, totalAmount,orderStatus,orderId,returnRequest,adminCancelReason,order ,moment});
     } catch (error) {
       console.error("Error fetching ordered products:", error);
       res.redirect("/");
     }
   };
   const getOrderedProductList = async (req, res) => {
-    const user = req.session.user;
-    const categories = await productHelpers.getAllCategories();
-    // console.log(req.params.id);
-    // let products = await userHelpers.getOrderedProducts(req.params.id);
-    // console.log("orderes products are: " + products);
-    // res.render("user/view-order-products", { user, products });
-    let orders = await userHelpers.getUserOrders(req.session.user._id);
-    res.render("user/order-list", { user, orders, moment,categories });
+    try {
+      const user = req.session.user;
+      const categories = await productHelpers.getAllCategories();
+      let orders = await userHelpers.getUserOrders(req.session.user._id);
+      res.render("user/order-list", { user, orders, moment,categories });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    }
+  
   };
   const returnRequest= async(req,res) => {
     try {

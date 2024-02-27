@@ -20,7 +20,7 @@
 
     <div class="container-fluid pt-5">
         <div class="row px-xl-5">
-            <div class="col-lg-8 table-responsive mb-5" style="margin-left: 150px;">
+            <div class="col-lg-8 table-responsive mb-5" >
 
 
 
@@ -31,24 +31,27 @@
                             <th>Products</th>
                             <th>Price</th>
                             <th>Quantity</th>
+                            <th>Total Price</th>
 
                         </tr>
                     </thead>
-                    <tbody class="align-middle">
+                    <tbody class="">
                         <% products.forEach(function(item){ %>
                             <tr>
-                                <td class="align-middle">
+                                <td class="">
                                     <img src="/product-images/<%= item.product.images[0] %>" alt=""
                                         style="width: 50px;">
                                     <%= item.product.name %>
                                 </td>
                                 <td class="align-middle">
-                                    ₹<%= item.product.price %>/-
+                                    ₹<%= item.price %>
                                 </td>
                                 <td class="align-middle">
                                     <%= item.quantity %>
                                 </td>
-
+                                <td class="align-middle">
+                                    ₹<%= (item.quantity * item.price).toFixed(2) %>
+                                </td>
                             </tr>
                             <% }) %>
 
@@ -153,6 +156,44 @@
                                 <% } %>
                 </div>
             </div>
+            <div class="col-lg-4 table-responsive mb-5">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Order ID:</th>
+                            <td><%= order.orderId %></td>
+                        </tr>
+                        <tr>
+                            <th>Delivery Details:</th>
+                            <td colspan="4">
+                                <div>
+                                    <strong>Name:</strong> <%= order.deliveryDetails.name %><br>
+                                    <strong>Street Address:</strong> <%= order.deliveryDetails.mobile %><br>
+                                    <strong>Adress:</strong> <%= order.deliveryDetails.address %><br>
+                                    <strong>Pincode:</strong> <%= order.deliveryDetails.pincode %><br>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Applied Coupon:</th>
+                            <td><%= order.
+                                appliedCoupon %></td>
+                        </tr>
+                        <tr>
+                            <th>Payment Method Used:</th>
+                            <td><%= order.
+                                paymentMethod %></td>
+                        </tr>
+                        <tr>
+                            <th>Date of Order:</th>
+                            <td><%= moment(order.date).format('MMMM Do YYYY, h:mm:ss a') %></td>
+                        </tr>
+                        <!-- Add more rows for other order details if needed -->
+                    </tbody>
+                    
+                </table>
+            </div>
+            
         </div>
     </div>
     <script>
@@ -177,7 +218,7 @@
 
             var returnReason = returnReasonOptions.value;
 
-            // Check if the selected reason is "Other" and the custom reason input is not empty
+           
             if (returnReason === "other" && customReasonInput.value.trim() !== "") {
                 returnReason = customReasonInput.value.trim();
             }
@@ -252,7 +293,7 @@
 
             var cancelReason = cancelReasonOptions.value;
 
-            // Check if the selected reason is "Other" and the custom reason input is not empty
+            
             if (cancelReason === "other" && customCancelReasonInput.value.trim() !== "") {
                 cancelReason = customCancelReasonInput.value.trim();
             }

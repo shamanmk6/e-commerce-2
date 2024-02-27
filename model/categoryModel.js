@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
   category: {
     type: String,
     required: true,
@@ -14,11 +10,11 @@ const categorySchema = new mongoose.Schema({
     required: true,
   },
   offerStart: {
-    type: Date,
+    type: String,
     required: true,
   },
   offerEnd: {
-    type: Date,
+    type: String,
     required: true,
   },
 });

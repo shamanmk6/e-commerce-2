@@ -121,7 +121,7 @@
                                                                     Cancel Message
                                                                 </button>
 
-                                                                <!-- Modal for displaying return message -->
+                                                               
                                                                 <div class="modal fade"
                                                                     id="cancelMessageModal<%= order._id %>"
                                                                     tabindex="-1" role="dialog"
@@ -168,7 +168,7 @@
                                                             Return Request
                                                         </button>
 
-                                                        <!-- Modal for displaying return message -->
+                                                        
                                                         <div class="modal fade" id="returnMessageModal<%= order._id %>"
                                                             tabindex="-1" role="dialog"
                                                             aria-labelledby="returnMessageModalLabel"
@@ -305,7 +305,6 @@
                         if (statusElement) {
                             statusElement.innerHTML = newStatus;
 
-                            // Adjust classes based on new status
                             statusElement.classList.remove("text-warning", "text-success");
                             if (newStatus.includes("Rejected")) {
                                 statusElement.classList.add("text-danger");

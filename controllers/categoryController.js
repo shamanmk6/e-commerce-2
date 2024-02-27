@@ -1,6 +1,6 @@
 const productHelpers = require("../helpers/product-helpers");
 const userHelpers = require("../helpers/user-helpers");
-
+const moment = require('moment')
 const category = async (req, res) => {
   try {
     const admin = req.session.admin;
@@ -12,8 +12,14 @@ const category = async (req, res) => {
   }
 };
 const addCategory = (req, res) => {
-  const admin = req.session.admin;
+  try {
+    const admin = req.session.admin;
   res.render("admin/add-category", { admin });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
+  
 };
 const categoryAdding = async (req, res) => {
   const admin = req.session.admin;
@@ -22,11 +28,15 @@ const categoryAdding = async (req, res) => {
     console.log(req.body.category);
     console.log(req.body.offer);
     console.log(req.body.offerStart);
+    const offerStart = moment(req.body.offerStart).format('YYYY-MM-DDTHH:mm');
+    const offerEnd = moment(req.body.offerEnd).format('YYYY-MM-DDTHH:mm');
+     console.log("offerstart after converting: ",offerStart);
+     console.log("offerEndafter converting: ",offerEnd);
     const categoryData = {
       category: req.body.category,
       offer: req.body.offer,
-      offerStart: req.body.offerStart,
-      offerEnd: req.body.offerEnd,
+      offerStart: offerStart,
+      offerEnd: offerEnd ,
     };
 
     const result = await userHelpers.categoryAdding(categoryData);
@@ -42,20 +52,32 @@ const categoryAdding = async (req, res) => {
   }
 };
 const editCategory = async (req, res) => {
-  const admin = req.session.admin;
-  let category = await userHelpers.getCategoryDetails(req.params.id);
-  res.render("admin/edit-category",{admin,category})
+  try {
+    const admin = req.session.admin;
+    let category = await userHelpers.getCategoryDetails(req.params.id);
+    res.render("admin/edit-category",{admin,category})
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
+ 
 };
 const updateCategory = async (req, res)=>{
-  let categoryId= req.params.id;
-  const admin = req.session.admin;
-  let category = await userHelpers.getCategoryDetails(req.params.id)
-  const message= await userHelpers.updateCategory(req.body,categoryId)
-  if (!message) {
-    res.redirect('/admin/category');
-    return;
+  try {
+    let categoryId= req.params.id;
+    const admin = req.session.admin;
+    let category = await userHelpers.getCategoryDetails(req.params.id)
+    const message= await userHelpers.updateCategory(req.body,categoryId)
+    if (!message) {
+      res.redirect('/admin/category');
+      return;
+    }
+    res.render('admin/edit-category',{error:message,admin,category});
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
   }
-  res.render('admin/edit-category',{error:message,admin,category});
+ 
 }
 
 module.exports = {

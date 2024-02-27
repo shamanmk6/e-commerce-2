@@ -73,25 +73,59 @@ module.exports = {
   },
   getAllProducts: () => {
     return new Promise(async (resolve, reject) => {
-      let products = await db
-        .getDatabase()
-        .collection(collection.PRODUCT_COLLECTION)
-        .find()
-        .toArray();
-      products = products.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        category: product.category,
-        quantity: product.quantity,
-        offer: product.offer,
-        offerStart: product.offerStart,
-        offerEnd: product.offerEnd,
-        description: product.description,
-        images: product.images || [], // Assuming 'images' is an array field
-        isDeleted: product.isDeleted,
-      }));
-      resolve(products);
+      try {
+        let products = await db
+          .getDatabase()
+          .collection(collection.PRODUCT_COLLECTION)
+          .find()
+          .toArray();
+        products = products.map((product) => ({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          category: product.category,
+          quantity: product.quantity,
+          offer: product.offer,
+          offerStart: product.offerStart,
+          offerEnd: product.offerEnd,
+          description: product.description,
+          images: product.images || [],
+          isDeleted: product.isDeleted,
+        }));
+        resolve(products);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getTotalProductsCount: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const totalProductsCount = await db
+          .getDatabase()
+          .collection(collection.PRODUCT_COLLECTION)
+          .countDocuments();
+        resolve(totalProductsCount);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  getProductsForPage: (skip, limit) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const products = await db
+          .getDatabase()
+          .collection(collection.PRODUCT_COLLECTION)
+          .find()
+          .skip(skip)
+          .limit(limit)
+          .toArray();
+        resolve(products);
+      } catch (error) {
+        reject(error);
+      }
     });
   },
   //   deleteProduct: (proId) => {
@@ -131,6 +165,9 @@ module.exports = {
         .then((response) => {
           console.log(response);
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
@@ -171,9 +208,13 @@ module.exports = {
         .then((response) => {
           console.log(response);
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
+
   getProductDetails: (proId) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()
@@ -181,7 +222,7 @@ module.exports = {
         .findOne({ _id: new objectId(proId) })
         .then((product) => {
           if (product) {
-            product.images = product.images || []; // Assuming 'images' is an array field
+            product.images = product.images || [];
             resolve(product);
           } else {
             reject(new Error("Product not found"));
@@ -223,7 +264,7 @@ module.exports = {
         if (response.modifiedCount > 0) {
           resolve();
         } else {
-          resolve("no document updated")
+          resolve("no document updated");
         }
       } catch (error) {
         reject(error);
@@ -239,25 +280,20 @@ module.exports = {
           .find()
           .toArray();
 
-        // Extract unique user IDs from the orders
         let userIds = orders.map((order) => order.userId);
 
-        // Fetch user details for the obtained user IDs
         let users = await db
           .getDatabase()
           .collection(collection.USER_COLLECTION)
           .find({ _id: { $in: userIds } })
           .toArray();
 
-        // Map user details to orders
         let ordersWithUserDetails = orders.map((order) => {
-          // Find the corresponding user details
           let user = users.find((user) => user._id.equals(order.userId));
 
-          // Add user details (e.g., name) to the order
           return {
             ...order,
-            userName: user ? user.name : "Unknown", // Change 'Unknown' to a default value if needed
+            userName: user ? user.name : "Unknown",
           };
         });
 
@@ -267,23 +303,68 @@ module.exports = {
       }
     });
   },
-  cancelRequest: (orderId, message) => {
+  getOrdersByDateRange: (fromDate, toDate) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const fromDateObj = new Date(fromDate);
+        const toDateObj = new Date(toDate);
+        fromDateObj.setHours(0, 0, 0, 0);
+        toDateObj.setHours(23, 59, 59, 999);
+        console.log("fromDateObj", fromDateObj);
+        console.log("toDateObj", toDateObj);
+
+        const orders = await db
+          .getDatabase()
+          .collection(collection.ORDER_COLLECTION)
+          .find({
+            date: {
+              $gte: fromDateObj,
+              $lte: toDateObj,
+            },
+          })
+          .toArray();
+        console.log("orders with date: ", orders);
+
+        const userIds = orders.map((order) => order.userId);
+
+        const users = await db
+          .getDatabase()
+          .collection(collection.USER_COLLECTION)
+          .find({ _id: { $in: userIds } })
+          .toArray();
+
+        const ordersWithUserDetails = orders.map((order) => {
+          const user = users.find((user) => user._id.equals(order.userId));
+
+          return {
+            ...order,
+            userName: user ? user.name : "Unknown",
+          };
+        });
+
+        resolve(ordersWithUserDetails);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  cancelRequest: (orderIds, message) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()
         .collection(collection.ORDER_COLLECTION)
-        .findOne({ _id: new objectId(orderId) })
+        .findOne({ _id: new objectId(orderIds) })
         .then((order) => {
           if (!order) {
             reject(new Error("Order not found"));
             return;
           }
 
-          const { totalAmount, userId } = order;
+          const { totalAmount, userId ,orderId} = order;
           console.log("total amount of cancelled order is: ", totalAmount);
           db.getDatabase()
             .collection(collection.ORDER_COLLECTION)
             .updateOne(
-              { _id: new objectId(orderId) },
+              { _id: new objectId(orderIds) },
               { $set: { status: "Cancelled", cancelReason: message } }
             )
             .then((orderUpdateResponse) => {
@@ -291,7 +372,7 @@ module.exports = {
                 .collection(collection.WALLET_COLLECTION)
                 .findOne({
                   userId: new objectId(userId),
-                  "cancelledOrders.orderId": new objectId(orderId),
+                  "cancelledOrders.orderId": new objectId(orderIds),
                 })
                 .then((existingWalletOrder) => {
                   if (!existingWalletOrder) {
@@ -303,7 +384,8 @@ module.exports = {
                           $inc: { totalAmountWallet: totalAmount },
                           $push: {
                             cancelledOrders: {
-                              orderId: new objectId(orderId),
+                              orderId: new objectId(orderIds),
+                              order:orderId,
                               totalAmount,
                             },
                           },
@@ -336,23 +418,24 @@ module.exports = {
         });
     });
   },
-  cancelOrder: (orderId, message) => {
+  cancelOrder: (orderIds, message) => {
     return new Promise((resolve, reject) => {
       db.getDatabase()
         .collection(collection.ORDER_COLLECTION)
-        .findOne({ _id: new objectId(orderId) })
+        .findOne({ _id: new objectId(orderIds) })
         .then((order) => {
           if (!order) {
             reject(new Error("Order not found"));
             return;
           }
-
-          const { totalAmount, userId } = order;
+         console.log("order: ",order);
+          const { totalAmount, userId,orderId } = order;
+          console.log("odrer id is: ",orderId);
           console.log("total amount of cancelled order is: ", totalAmount);
           db.getDatabase()
             .collection(collection.ORDER_COLLECTION)
             .updateOne(
-              { _id: new objectId(orderId) },
+              { _id: new objectId(orderIds) },
               { $set: { status: "Cancelled", adminCancelReason: message } }
             )
             .then((orderUpdateResponse) => {
@@ -360,7 +443,7 @@ module.exports = {
                 .collection(collection.WALLET_COLLECTION)
                 .findOne({
                   userId: new objectId(userId),
-                  "cancelledOrders.orderId": new objectId(orderId),
+                  "cancelledOrders.orderId": new objectId(orderIds),
                 })
                 .then((existingWalletOrder) => {
                   if (!existingWalletOrder) {
@@ -420,6 +503,9 @@ module.exports = {
         )
         .then((response) => {
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
@@ -433,6 +519,9 @@ module.exports = {
         )
         .then((response) => {
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
@@ -446,6 +535,9 @@ module.exports = {
         )
         .then((response) => {
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
@@ -459,6 +551,9 @@ module.exports = {
         )
         .then((response) => {
           resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
         });
     });
   },
@@ -488,19 +583,25 @@ module.exports = {
   },
   deleteImage: (proId, imageName) => {
     return new Promise((resolve, reject) => {
-     const response= db.getDatabase()
+      db.getDatabase()
         .collection(collection.PRODUCT_COLLECTION)
         .updateOne(
           { _id: new objectId(proId) },
           { $pull: { images: imageName } }
         )
-        if (response.modifiedCount > 0) {
-          console.log("updated");
-          resolve();
-      }else{
-        console.log("no documents updated");
-        resolve("no documents updated")
-      }
+        .then((response) => {
+          if (response.modifiedCount > 0) {
+            console.log("Image deleted successfully");
+            resolve();
+          } else {
+            console.log("No documents updated");
+            resolve("No documents updated");
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting image:", error);
+          reject(error);
+        });
     });
   },
 };

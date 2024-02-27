@@ -4,9 +4,13 @@ const productHelpers = require("../helpers/product-helpers");
 const moment = require("moment");
 
 const getCoupons = async (req, res) => {
-  const admin = req.session.admin;
-  let coupons = await userHelpers.getCoupons();
-  res.render("admin/view-coupons", { admin, coupons, moment });
+  try {
+    const admin = req.session.admin;
+    let coupons = await userHelpers.getCoupons();
+    res.render("admin/view-coupons", { admin, coupons, moment });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const addCoupons = async (req, res) => {
@@ -44,30 +48,31 @@ const createCoupon = async (req, res) => {
 };
 const applyCoupon = async (req, res) => {
   try {
+    console.log("apply coupon called: ");
     const user = req.session.user;
     console.log("coupon is:", req.body.couponcode);
-    const coupon = req.body.couponcode;
+    const coupon = req.body.couponcode.toString();
     const validCouponResponse = await userHelpers.validCoupon(coupon, user._id);
-
+    req.session.appliedCoupon = {
+      code: req.body.couponcode,
+    };
+    const appliedCoupon = {
+      code: req.body.couponcode,
+    };
     if (!validCouponResponse.valid) {
       throw new Error(validCouponResponse.message || "Invalid Coupon");
     }
 
-    let cartItems = await userHelpers.getCartProducts(req.session.user._id);
-
-    let totalValue =
-      req.session.discountedTotal ||
-      (await userHelpers.totalAmount(req.session.user._id));
-    const categories = await productHelpers.getAllCategories();
-
+    let total = req.body.total
+    console.log("Total @ apply coupon is: ",total);
     if (validCouponResponse.couponDocument.discount) {
       const discountValue = parseFloat(
         validCouponResponse.couponDocument.discount
       );
       if (!isNaN(discountValue)) {
-        totalValue = (discountValue / 100) * totalValue;
-        req.session.discountedTotal = totalValue;
-        await userHelpers.updateCartTotal(req.session.user._id, totalValue);
+        total = total-((discountValue / 100) * total)
+
+        // await userHelpers.updateCartTotal(req.session.user._id, totalValue);
       } else {
         console.error(
           "Invalid discount value:",
@@ -75,25 +80,48 @@ const applyCoupon = async (req, res) => {
         );
       }
     }
-
-    res.render("user/cart", { user, cartItems, totalValue, categories });
+    let userDetails = await userHelpers.getUserDetails(req.session.user._id);
+    let cartCount = await userHelpers.getCartCount(req.session.user._id);
+    // let total = await userHelpers.totalAmount(req.session.user._id);
+    console.log("After apply coupon total: ",total);
+    res.render("user/order", {
+      user,
+      total,
+      cartCount,
+      userDetails,
+      appliedCoupon,
+    });
   } catch (error) {
     const user = req.session.user;
     console.error("Error applying coupon:", error.message);
     const errorMessage = error.message || "Invalid Coupon. Please try again.";
-    let cartItems = await userHelpers.getCartProducts(req.session.user._id);
-    let totalValue =
+    let total =
       req.session.discountedTotal ||
-      (await userHelpers.totalAmount(req.session.user._id));
-    res.render("user/cart", { user, cartItems, totalValue, errorMessage });
+      req.body.total;
+    let userDetails = await userHelpers.getUserDetails(req.session.user._id);
+    let cartCount = await userHelpers.getCartCount(req.session.user._id);
+
+    // let total = await userHelpers.totalAmount(req.session.user._id);
+    res.render("user/order", {
+      user,
+      cartCount,
+      total,
+      errorMessage,
+      userDetails,
+    });
   }
 };
 
 const editCoupon = async (req, res) => {
-  const admin = req.session.admin;
-  let coupon = await userHelpers.getCoupon(req.params.id);
-  console.log("Coupon is: ", coupon);
-  res.render("admin/edit-coupon", { coupon, admin });
+  try {
+    const admin = req.session.admin;
+    let coupon = await userHelpers.getCoupon(req.params.id);
+    console.log("Coupon is: ", coupon);
+    res.render("admin/edit-coupon", { coupon, admin });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 const updateCoupon = async (req, res) => {
@@ -103,21 +131,19 @@ const updateCoupon = async (req, res) => {
     let couponId = req.params.id;
     console.log("update Coupon:", req.body);
 
-    const message =  await userHelpers.updateCoupon(req.body, couponId);
-    console.log("message is ",message);
+    const message = await userHelpers.updateCoupon(req.body, couponId);
+    console.log("message is ", message);
     if (!message) {
       res.redirect("/admin/coupons");
       return;
     }
     console.log("rendering edit-coupon");
-    res.render('admin/edit-coupon',{error:message,admin,coupon});
+    res.render("admin/edit-coupon", { error: message, admin, coupon });
   } catch (error) {
     console.error("Error updating coupon:", error);
-      res.status(500).send("Internal Server Error");
-    
+    res.status(500).send("Internal Server Error");
   }
 };
-
 
 module.exports = {
   getCoupons,

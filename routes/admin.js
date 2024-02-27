@@ -3,12 +3,16 @@ const router = express.Router();
 const isAdmin = require("../middlewares/isAdmin.js");
 const {
   getUsers,
-  blockUser,
-  unBlockUser,
+  blockOrUnblockUser,
   verifyAdminLogin,
   adminLogout,
   adminLogin,
-  
+  getSales,
+  getSalesReport,
+  getOrdersReport,
+  getOrdersReportXLXS,
+  getSalesReportXLXS,
+
 } = require("../controllers/adminController");
 
 const {
@@ -45,7 +49,6 @@ const{
   returnOrder,
 }=require('../controllers/orderController.js')
 
-/* GET home page. */
 router.get("/", adminLogin);
 router.get("/view-products", isAdmin, getProducts);
 router.post("/login", verifyAdminLogin);
@@ -61,8 +64,7 @@ router.route("/edit-product/:id").get(isAdmin,editProduct).post(isAdmin,updatePr
 
 router.get("/users", isAdmin, getUsers);
 
-router.get("/block-user/:id", blockUser);
-router.get("/unblock-user/:id", unBlockUser);
+router.get("/:action-user/:id", blockOrUnblockUser);
 
 router.get("/category", isAdmin, category);
 
@@ -82,6 +84,7 @@ router.get("/shipped-order/:id",isAdmin, shippedOrder);
 router.get("/ordered-items/:id",isAdmin, orderedItems);
 
 router.get("/coupons",isAdmin,getCoupons)
+router.get("/sales/:year?",isAdmin,getSales)
 
 router.get("/add-coupons",isAdmin,addCoupons)
 router.post("/add-coupons",isAdmin,createCoupon)
@@ -91,5 +94,9 @@ router.post("/edit-coupon/:id",isAdmin,updateCoupon);
 
 router.post("/delete-image/:id",isAdmin,deleteProductImage);
 
+router.get('/sales-report',isAdmin,getSalesReport)
+router.get('/sales-reportxlsx',isAdmin,getSalesReportXLXS)
+router.get('/orders-report',isAdmin,getOrdersReport)
+router.get('/orders-reportxlsx',isAdmin,getOrdersReportXLXS)
 
 module.exports = router;

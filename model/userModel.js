@@ -1,5 +1,6 @@
 const { Int32 } = require("mongodb");
 const mongoose = require("mongoose");
+const { array } = require("../middlewares/upload");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -10,10 +11,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-  },
-  address: {
-    type: String,
-    default: null,
   },
   pincode: {
     type: String,
@@ -29,7 +26,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
   },
   appliedCoupons: {
-    type: String,
+    type: Array,
     unique: true,
     default:null,
   },
@@ -37,10 +34,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
   },
-  // otp:{
-  //  type:String,
-  //  default:null,
-  // },
   isVerified: {
     type: Boolean,
     default: false,
@@ -49,6 +42,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  addresses:{
+    type:Array,
+    default:false,
+  }
 });
 
 module.exports = mongoose.model("user", userSchema);

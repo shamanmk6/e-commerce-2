@@ -44,7 +44,7 @@
                                             <strong> Mobile:</strong>
                                             <%= order.deliveryDetails.mobile %><br>
                             </td>
-                            <td class="align-middle">₹<%= order.totalAmount %>.00</td>
+                            <td class="align-middle">₹<%= order.totalAmount %></td>
                             <td class="align-middle">
                                 <%= order.deliveryDetails.mobile %>
                             </td>
@@ -141,9 +141,9 @@
             });
         }
 </script>
-<!-- Add this at the end of your HTML file, before the closing </body> tag -->
+
 <script>
-    // Function to show items based on the selected page
+   
     function showPage(pageNumber) {
         const items = document.querySelectorAll('.pagination-item');
         const startIndex = (pageNumber - 1) * 10;
@@ -151,14 +151,14 @@
 
         items.forEach((item, index) => {
             if (index >= startIndex && index < endIndex) {
-                item.style.display = 'table-row'; // or 'block' if using div elements
+                item.style.display = 'table-row'; 
             } else {
                 item.style.display = 'none';
             }
         });
     }
 
-    // Attach click event listeners to pagination links
+    
     document.querySelectorAll('.pagination-link').forEach(link => {
         link.addEventListener('click', function (event) {
             event.preventDefault();
@@ -167,6 +167,6 @@
         });
     });
 
-    // Show the first page initially
+    
     showPage(1);
 </script>

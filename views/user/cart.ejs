@@ -70,7 +70,7 @@
                                     </td>
 
                                     <td class="align-middle">
-                                        <button class="btn btn-sm btn-primary">
+                                        <button class="btn btn-sm btn-primary" onclick="deleteItem('<%= cartItem._id %>','<%= cartItem.product._id %>','<%= user._id %>')">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     </td>
@@ -86,21 +86,6 @@
             <% } %>
         </div>
         <div class="col-lg-4">
-            <% if (cartItems.length > 0 && totalValue > 0) { %>
-            <form class="mb-5" action="/apply-coupon" method="post">
-                <div class="input-group">
-                    <input type="text" class="form-control p-4" placeholder="Coupon Code" name="couponcode">
-                    <div class="input-group-append">
-                        <button class="btn btn-primary">Apply Coupon</button>
-                    </div>
-                </div>
-            </form>
-            <% } %>
-            <% if (typeof errorMessage !=='undefined' && errorMessage) { %>
-                <div class="alert alert-danger mt-3">
-                    <%= errorMessage %>
-                </div>
-            <% } %>
             <div class="card border-secondary mb-5">
                 <div class="card-header bg-secondary border-0">
                     <h4 class="font-weight-semi-bold m-0">Cart Summary</h4>
@@ -119,11 +104,12 @@
                     
                         <div class="d-flex justify-content-between mt-2">
                             <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold">₹<span id="total"><%= totalValue %></span></h5>
+                            <h5 class="font-weight-bold">₹<span id="total"><%= parseFloat(totalValue).toFixed(2) %></span></h5>
                         </div>
                         <% if (cartItems.length > 0 && totalValue > 0) { %>
-                        <a href="/place-order"><button class="btn btn-block btn-primary my-3 py-3">Proceed To Checkout</button></a>
+                            <button class="btn btn-block btn-primary my-3 py-3" id="checkout-button">Proceed To Checkout</button>
                         <% } %>
+                        
                 </div>
                 
             </div>
@@ -157,3 +143,13 @@
         })
     }
 </script> -->
+<script>
+   
+$(document).ready(function() {
+    $("#checkout-button").click(function() {
+        var totalValue = $("#total").text().trim();
+        window.location.href = "/place-order/" + totalValue;
+    });
+});
+
+</script>
