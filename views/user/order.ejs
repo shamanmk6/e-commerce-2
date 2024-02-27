@@ -50,9 +50,20 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address</label>
-                                <input class="form-control" type="text" placeholder="123 Street" name="address"
-                                    value="<%= userDetails.address %>" readonly>
+                                <% if (userDetails.addresses && userDetails.addresses.length > 0) { %>
+                                    <% userDetails.addresses.forEach(function(address, index) { %>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" class="custom-control-input" name="selectedAddress" id="address_<%= index %>" value="<%= index %>" <%= index === 0 ? 'checked' : '' %>>
+                                            <label class="custom-control-label" for="address_<%= index %>">
+                                                <%= address %>
+                                            </label>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p>No addresses found.</p>
+                                <% } %>
                             </div>
+                            
                             <div class="col-md-6 form-group">
                                 <label>Pincode</label>
                                 <input class="form-control" type="text" placeholder="123 Street" name="pincode"
@@ -97,34 +108,10 @@
                     <div class="card-header bg-secondary border-0">
                         <h4 class="font-weight-semi-bold m-0">Order Total</h4>
                     </div>
-                    <!-- <div class="card-body">
-                        <h5 class="font-weight-medium mb-3">Products</h5>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 1</p>
-                            <p>$150</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 2</p>
-                            <p>$150</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p>Colorful Stylish Shirt 3</p>
-                            <p>$150</p>
-                        </div>
-                        <hr class="mt-0">
-                        <div class="d-flex justify-content-between mb-3 pt-1">
-                            <h6 class="font-weight-medium">Subtotal</h6>
-                            <h6 class="font-weight-medium">$150</h6>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <h6 class="font-weight-medium">Shipping</h6>
-                            <h6 class="font-weight-medium">$10</h6>
-                        </div>
-                    </div> -->
                     <div class="card-footer border-secondary bg-transparent">
                         <div class="d-flex justify-content-between mt-2">
                             <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold">₹<%= total %>.00</h5>
+                            <h5 class="font-weight-bold">₹<%= total %></h5>
                         </div>
                     </div>
                 </div>
@@ -154,6 +141,27 @@
             </div>
         </div>
     </form>
+    <div class="card border-secondary mb-5 col-md-6">
+        <div class="card-header bg-secondary border-0">
+            <h4 class="font-weight-semi-bold m-0">COUPON</h4>
+        </div>
+        <div class="card-footer border-secondary bg-transparent">
+            <form class="mb-5" action="/apply-coupon" method="post" id="coupon-form">
+                <div class="input-group">
+                    <input type="text" name="total" value="<%= total %>" hidden>
+                    <input type="text" class="form-control p-4" placeholder="Coupon Code" name="couponcode">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary">Apply Coupon</button>
+                    </div>
+                </div>
+            </form>
+            <% if (typeof errorMessage !=='undefined' && errorMessage) { %>
+                <div class="alert alert-danger mt-3">
+                    <%= errorMessage %>
+                </div>
+            <% } %>
+        </div>
+    </div>
 </div>
 <!-- Checkout End -->
 
@@ -170,19 +178,22 @@
 <script>
   $("#checkout-form").submit((e) => {
     e.preventDefault();
-
-    // Get the selected address group
+    let total = JSON.parse((`<%- JSON.stringify(total) %>`))
+   
     var selectedAddressGroup = $('input[name="addressGroup"]:checked').val();
 
-    // Append the selected address group to the serialized form data
+    
     var formData = 'selectedAddressGroup=' + selectedAddressGroup;
-
+    var userDetails = JSON.parse((`<%- JSON.stringify(userDetails) %>`))
     if (selectedAddressGroup === 'address1') {
+        var selectedAddressIndex = $('input[name="selectedAddress"]:checked').val();
+        var selectedAddress = userDetails.addresses[selectedAddressIndex];
+        console.log("selected adress is ",selectedAddress);
         formData += '&' +
             'name=' + $('#address1Fields input[name="name"]').val() +
             '&email=' + $('#address1Fields input[name="email"]').val() +
             '&mobile=' + $('#address1Fields input[name="mobile"]').val() +
-            '&address=' + $('#address1Fields input[name="address"]').val() +
+            '&address=' + selectedAddress +
             '&pincode=' + $('#address1Fields input[name="pincode"]').val()+
             '&userId=' + $('#address1Fields input[name="userId"]').val();
             
@@ -198,7 +209,7 @@
 
     }
     formData += '&' + 'payment=' + $('input[name="payment"]:checked').val();
-
+    formData += '&'+'total=' + total;
     $.ajax({
         url: '/place-order',
         method: 'post',
@@ -215,13 +226,13 @@
 
 function razorpayPayment(order){
     var options = {
-    "key": "rzp_test_pwhvE482E5y8F4", // Enter the Key ID generated from the Dashboard
-    "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "key": "rzp_test_pwhvE482E5y8F4", 
+    "amount": order.amount, 
     "currency": "INR",
     "name": "E-Shopper",
     "description": "Test Transaction",
     "image": "https://example.com/your_logo",
-    "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "order_id": order.id, 
     "handler": function (response){
         verifyPayment(response,order)
     },

@@ -157,7 +157,7 @@ function addToCart(proId) {
             location.reload();
           } else {
             document.getElementById(proId).value = quantity + count;
-            document.getElementById("total").innerHTML = response.total;
+            document.getElementById("total").innerHTML = parseFloat(response.total).toFixed(2);
           }
         } else {
           console.error("Unexpected status code:", xhr.status);
@@ -169,5 +169,30 @@ function addToCart(proId) {
       },
     });
   }
+  function deleteItem(cartId, proId, userId) {
+    
+    $.ajax({
+      url: "/delete-item",
+      data: {
+        user: userId,
+        cart: cartId,
+        product: proId,
+      },
+      method: "post",
+      success: (response, status, xhr) => {
+        if (xhr.status === 200) {
+          console.log("Server Response:", response);
+          if (response.removedProduct) {
+            location.reload();
+          } 
+        } else {
+          console.error("Unexpected status code:", xhr.status);
+        }
+      },
 
+      error: (xhr, status, error) => {
+        console.error("AJAX Error:", error);
+      },
+    });
+  }
 jQuery;

@@ -48,6 +48,7 @@ const{
   addToCart,
   changeProductQuantity,
   checkout,
+  deleteCartItem,
 }=require('../controllers/cartController.js');
 
 // const { verifyEmail } = require('../helpers/user-helpers');
@@ -62,7 +63,7 @@ const{
 //   }
 // };
 
-/* GET users listing. */
+
 router.get("/", viewProducts);
 
 router.route("/login").get(loginUser).post(validateLogin);
@@ -86,8 +87,8 @@ router.get("/cart", verifyLogin, getCart);
 router.get("/add-to-cart/:id",verifyLogin,addToCart);
 
 router.post("/change-product-quantity",verifyLogin, changeProductQuantity);
-
-router.get("/place-order", verifyLogin, placeOrder);
+router.post("/delete-item",verifyLogin, deleteCartItem);
+router.get("/place-order/:totalValue", verifyLogin, placeOrder);
 
 router.post("/place-order",checkout);
 

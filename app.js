@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
 const db = require("./config/connection");
-
+const userHelpers = require("./helpers/user-helpers")
 const middleware = require("./middlewares/middleware");
 const flash = require("express-flash-message");
 const expressLayouts = require("express-ejs-layouts");
@@ -40,7 +40,7 @@ app.use(
 // app.use(flash())
 
 app.use((req, res, next) => {
-  res.locals.message = ""; // Set a default value
+  res.locals.message = ""; 
   next();
 });
 
@@ -55,31 +55,47 @@ app.use(middleware.setRequestVariable);
 db.connectToDatabase((err) => {
   if (err) {
     console.log("Error connecting to the database:", err);
-    // Handle the error, such as shutting down the server or displaying an error message.
+    
   } else {
-    // Proceed with your application logic that depends on the database connection.
+
   }
 });
-let otpCollection = db.getDatabase().collection(collection.OTP_CollECTION);
+// let otpCollection = db.getDatabase().collection(collection.OTP_CollECTION)
+// console.log("collection:",otpCollection);
+// otpCollection.dropIndex("expiresAt_1", function(err, result) {
+//   if (err) {
+//       console.error("Error dropping index:", err);
+//   } else {
+//       console.log("Existing index dropped successfully");
+//       // Create a new TTL index on the 'expiresAt' field
+//       otpCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 60 }, function(err, result) {
+//           if (err) {
+//               console.error("Error creating index:", err);
+//           } else {
+//               console.log("TTL index created successfully");
+//           }
+//       });
+//   }
+// });
+
 
 app.use("/", userRouter);
 app.use("/admin", adminRouter);
 
-// catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
 // error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
+app.use(async function (err, req, res, next) {
+  let categories = await userHelpers.getCategory();
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // render the error page
+  console.log("got category:",categories);
+  
   res.status(err.status || 500);
-  res.render("error", { error: res.locals.error }); // Pass the error object to the error.ejs template
+  res.render("error", { error: res.locals.error, categories });
 });
 
 const PORT = 3001;

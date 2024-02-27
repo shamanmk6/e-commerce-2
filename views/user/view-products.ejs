@@ -21,7 +21,7 @@
                         <div class="p-3" style="max-width: 700px;">
                             <h4 class="text-light text-uppercase font-weight-medium mb-3">10% Off Your First Order</h4>
                             <h3 class="display-4 text-white font-weight-semi-bold mb-4">Fashionable Dress</h3>
-                            <a href="" class="btn btn-light py-2 px-3">Shop Now</a>
+
                         </div>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
                         <div class="p-3" style="max-width: 700px;">
                             <h4 class="text-light text-uppercase font-weight-medium mb-3">10% Off Your First Order</h4>
                             <h3 class="display-4 text-white font-weight-semi-bold mb-4">Reasonable Price</h3>
-                            <a href="" class="btn btn-light py-2 px-3">Shop Now</a>
+
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                     <div class="position-relative" style="z-index: 1;">
                         <h5 class="text-uppercase text-primary mb-3">20% off the all order</h5>
                         <h1 class="mb-4 font-weight-semi-bold">Spring Collection</h1>
-                        <a href="" class="btn btn-outline-primary py-md-2 px-md-3">Shop Now</a>
+
                     </div>
                 </div>
             </div>
@@ -166,290 +166,67 @@
                     <div class="position-relative" style="z-index: 1;">
                         <h5 class="text-uppercase text-primary mb-3">20% off the all order</h5>
                         <h1 class="mb-4 font-weight-semi-bold">Winter Collection</h1>
-                        <a href="" class="btn btn-outline-primary py-md-2 px-md-3">Shop Now</a>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- Offer End -->
-
-
     <!-- Products Start -->
     <div class="container-fluid pt-5">
         <div class="text-center mb-4">
             <h2 class="section-title px-5"><span class="px-2">Trandy Products</span></h2>
         </div>
+        <div class="row justify-content-center ml-5 mb-3">
+            <div class="col-md-2">
+                <label for="minPrice">Min Price:</label>
+                <input type="number" id="minPrice" class="form-control" placeholder="Min Price">
+            </div>
+            <div class="col-md-2">
+                <label for="maxPrice">Max Price:</label>
+                <input type="number" id="maxPrice" class="form-control" placeholder="Max Price">
+            </div>
+            <div class="col-md-2">
+                <button onclick="applyPriceFilter('<%= JSON.stringify(products) %>')"
+                    class="btn btn-primary" style="margin-top: 32px;">Apply</button>
+            </div>
+        </div>
         <div class="row no-gutters px-xl-5 pb-3 product">
             <% products.forEach(function(product) { %>
                 <% if (!product.isDeleted) { %>
-
-                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1 no-padding">
+                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1 no-padding pagination-item">
                         <div class="card product-item border-0 mb-4">
-                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                <% let finalDiscount = 0; %>
-                            
-                                <% if (product.category) { %>
-                                    <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                    <% if (category && category.offer !== "0" && category.offerStart && category.offerEnd) { %>
-                                        <% const currentDateCategory = new Date(); %>
-                                        <% const offerStartDateCategory = new Date(category.offerStart); %>
-                                        <% const offerEndDateCategory = new Date(category.offerEnd); %>
-                                        <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
-                                            <% finalDiscount = Math.max(finalDiscount, category.offer); %>
-                                        <% } %>
-                                    <% } %>
-                                <% } %>
-                            
-                                <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
-                                    <% const currentDate = new Date(); %>
-                                    <% const offerStartDate = new Date(product.offerStart); %>
-                                    <% const offerEndDate = new Date(product.offerEnd); %>
-                            
-                                    <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                        <% finalDiscount = Math.max(finalDiscount, product.offer); %>
-                                    <% } %>
-                                <% } %>
-                            
-                                <% if (finalDiscount > 0) { %>
+                            <div
+                                class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                <% if (product.finalDiscount> 0) { %>
                                     <div class="ribbons-wrapper">
                                         <div class="ribbon">
-                                            <span class="ribbon1"><span>Offer:<%= finalDiscount %>%</span></span>
+                                            <span class="ribbon1"><span>Offer:<%= product.finalDiscount %>
+                                                        %</span></span>
                                         </div>
                                     </div>
-                                <% } %>
-                            
-                                <% if (product.images && product.images.length > 0) { %>
-                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
-                                <% } %>
+                                    <% } %>
+                                        <% if (product.images && product.images.length> 0) { %>
+                                            <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>"
+                                                alt="">
+                                            <% } %>
                             </div>
-                            
-                            
-                            
                             <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
                                 <h6 class="text-truncate mb-3 product-name">
                                     <%= product.name %>
                                 </h6>
                                 <div class="d-flex justify-content-center">
-                                    <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
-                                      <% const currentDate = new Date(); %>
-                                      <% const offerStartDate = new Date(product.offerStart); %>
-                                      <% const offerEndDate = new Date(product.offerEnd); %>
-                                  
-                                      <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                        <% const productDiscountedPrice = (product.price - (product.price * product.offer / 100)).toFixed(2); %>
-                                  
-                                        <% if (product.category) { %>
-                                          <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                  
-                                          <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
-                                            <% const currentDateCategory = new Date(); %>
-                                            <% const offerStartDateCategory = new Date(category.offerStart); %>
-                                            <% const offerEndDateCategory = new Date(category.offerEnd); %>
-                                  
-                                            <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
-                                              <% const discountedPriceWithCategoryOffer = (product.price - (product.price * category.offer / 100)).toFixed(2); %>
-                                  
-                                              <% if (parseFloat(productDiscountedPrice) < parseFloat(discountedPriceWithCategoryOffer)) { %>
-                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %></h6>
-                                              <% } else { %>
-                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                <h6 style="margin-left: 5px;">₹<%= discountedPriceWithCategoryOffer %></h6>
-                                              <% } %>
-                                  
-                                            <% } else { %>
-                                              <h6>₹<%= product.price %>.00</h6>
-                                            <% } %>
-                                  
-                                          <% } else { %>
-                                            <h6>₹<%= product.price %>.00</h6>
-                                          <% } %>
-                                  
-                                        <% } else { %>
-                                          <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                          <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %></h6>
-                                        <% } %>
-                                  
-                                      <% } else { %>
-                                        <h6>₹<%= product.price %>.00</h6>
-                                      <% } %>
-                                    <% } else if (product.category) { %>
-                                      <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                      <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
-                                        <% const currentDate = new Date(); %>
-                                        <% const offerStartDate = new Date(category.offerStart); %>
-                                        <% const offerEndDate = new Date(category.offerEnd); %>
-                                  
-                                        <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                          <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                          <h6 style="margin-left: 5px;">₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
-                                        <% } else { %>
-                                          <h6>₹<%= product.price %>.00</h6>
-                                        <% } %>
-                                  
-                                      <% } else { %>
-                                        <h6>₹<%= product.price %>.00</h6>
-                                      <% } %>
-                                    <% } else { %>
-                                      <h6>₹<%= product.price %>.00</h6>
-                                    <% } %>
-                                  </div>
-                                  
-                                  
-                                
-                                
-
-                                <h6 class="text-truncate mb-3">
-                                    <%= product.description %>
-                                </h6>
-                                <h6 class="text-truncate mb-3 product-category" data-category="<%= product.category %>"
-                                    style="font-weight: 300;">
-                                    Category:<%= product.category %>
-                                </h6>
-                            </div>
-                            <div class="card-footer d-flex justify-content-between bg-light border">
-                                <a href="/details/<%= product._id %>" class="btn btn-sm text-dark p-0"><i
-                                        class="fas fa-eye text-primary mr-1"></i>View Detail</a>
-                                <button class="btn btn-sm text-dark p-0" onclick="addToCart('<%= product._id %>')"><i
-                                        class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                    <% } %>
-                        <% }) %>
-
-        </div>
-
-    </div>
-    <!-- Products End -->
-
-
-    <!-- Subscribe Start -->
-    <div class="container-fluid bg-secondary my-5">
-        <div class="row justify-content-md-center py-5 px-xl-5">
-            <div class="col-md-6 col-12 py-5">
-                <div class="text-center mb-2 pb-2">
-                    <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Stay Updated</span></h2>
-                    <p>Amet lorem at rebum amet dolores. Elitr lorem dolor sed amet diam labore at justo ipsum eirmod
-                        duo labore labore.</p>
-                </div>
-                <form action="">
-                    <div class="input-group">
-                        <input type="text" class="form-control border-white p-4" placeholder="Email Goes Here">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary px-4">Subscribe</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- Subscribe End -->
-
-
-    <!-- Products Start -->
-    <div class="container-fluid pt-5">
-        <div class="text-center mb-4">
-            <h2 class="section-title px-5"><span class="px-2">Just Arrived</span></h2>
-        </div>
-        <div class="row px-xl-5 pb-3">
-            <% products.forEach(function(product) { %>
-                <% if (!product.isDeleted) { %>
-                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
-                        <div class="card product-item border-0 mb-4">
-                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
-                                <% let finalDiscount = 0; %>
-                            
-                                <% if (product.category) { %>
-                                    <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                    <% if (category && category.offer !== "0" && category.offerStart && category.offerEnd) { %>
-                                        <% const currentDateCategory = new Date(); %>
-                                        <% const offerStartDateCategory = new Date(category.offerStart); %>
-                                        <% const offerEndDateCategory = new Date(category.offerEnd); %>
-                                        <% if (currentDateCategory >= offerStartDateCategory && currentDateCategory <= offerEndDateCategory) { %>
-                                            <% finalDiscount = Math.max(finalDiscount, category.offer); %>
-                                        <% } %>
-                                    <% } %>
-                                <% } %>
-                            
-                                <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
-                                    <% const currentDate = new Date(); %>
-                                    <% const offerStartDate = new Date(product.offerStart); %>
-                                    <% const offerEndDate = new Date(product.offerEnd); %>
-                            
-                                    <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                        <% finalDiscount = Math.max(finalDiscount, product.offer); %>
-                                    <% } %>
-                                <% } %>
-                            
-                                <% if (finalDiscount > 0) { %>
-                                    <div class="ribbons-wrapper">
-                                        <div class="ribbon">
-                                            <span class="ribbon1"><span>Offer:<%= finalDiscount %>%</span></span>
-                                        </div>
-                                    </div>
-                                <% } %>
-                            
-                                <% if (product.images && product.images.length > 0) { %>
-                                    <img class="img-fluid w-100" src="/product-images/<%= product.images[0] %>" alt="">
-                                <% } %>
-                            </div>
-                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
-                                <h6 class="text-truncate mb-3 product-name">
-                                    <%= product.name %>
-                                </h6>
-                                 <div class="d-flex justify-content-center">
-                                    <% if (product.offer !== "0" && product.offerStart && product.offerEnd) { %>
-                                        <% const currentDate = new Date(); %>
-                                        <% const offerStartDate = new Date(product.offerStart); %>
-                                        <% const offerEndDate = new Date(product.offerEnd); %>
-                                
-                                        <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                            <% const productDiscountedPrice = (product.price - (product.price * product.offer / 100)).toFixed(2); %>
-                                
-                                            <% if (product.category) { %>
-                                                <% console.log("product category is:", product.category); %>
-                                                <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                                <div>
-                                                    <% console.log("Category:", category); %>
-                                                </div>
-                                                <% if (category && category.offer > product.offer) { %>
-                                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                    <h6 style="margin-left: 5px;">₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
-                                                <% } else { %>
-                                                    <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                    <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %> </h6>
-                                                <% } %>
-                                            <% } else { %>
-                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %> </h6>
-                                            <% } %>
-                                
-                                        <% } else { %>
-                                            <h6>₹<%= product.price %>.00</h6>
-                                        <% } %>
-                                    <% } else if (product.category) { %>
-                                        <% const category = categories.find(cat => cat.category.toLowerCase() === product.category.toLowerCase()); %>
-                                        <% if (category && category.offer && category.offerStart && category.offerEnd) { %>
-                                            <% const currentDate = new Date(); %>
-                                            <% const offerStartDate = new Date(category.offerStart); %>
-                                            <% const offerEndDate = new Date(category.offerEnd); %>
-                                            <% if (currentDate >= offerStartDate && currentDate <= offerEndDate) { %>
-                                                <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
-                                                <h6 style="margin-left: 5px;">
-                                                 ₹<%= (product.price - (product.price * category.offer / 100)).toFixed(2) %></h6>
+                                    <% if (product.finalDiscount> 0) { %>
+                                        <% const productDiscountedPrice=(product.price - (product.price *
+                                            product.finalDiscount / 100)).toFixed(2); %>
+                                            <h6 class="text-muted ml-2"><del>₹<%= product.price %>.00</del></h6>
+                                            <h6 style="margin-left: 5px;">₹<%= productDiscountedPrice %>
+                                            </h6>
                                             <% } else { %>
                                                 <h6>₹<%= product.price %>.00</h6>
-                                            <% } %>
-                                        <% } else { %>
-                                            <h6>₹<%= product.price %>.00</h6>
-                                        <% } %>
-                                    <% } else { %>
-                                        <h6>₹<%= product.price %>.00</h6>
-                                    <% } %>
+                                                <% } %>
                                 </div>
-
                                 <h6 class="text-truncate mb-3">
                                     <%= product.description %>
                                 </h6>
@@ -468,9 +245,43 @@
                     </div>
                     <% } %>
                         <% }) %>
+        </div>
+        <div class="pagination mt-3 ">
+            <% const itemsPerPage=8;%>
+                <% const totalPages=Math.ceil(products.length / itemsPerPage); %>
+                    <% for (let i=1; i <=totalPages; i++) { %>
+                        <a href="#" class="btn btn-primary pagination-link ml-3" data-page="<%= i %>">
+                            <%= i %>
+                        </a>
+                        <% } %>
         </div>
 
         <!-- Products End -->
+
+
+        <!-- Subscribe Start -->
+        <div class="container-fluid bg-secondary my-5">
+            <div class="row justify-content-md-center py-5 px-xl-5">
+                <div class="col-md-6 col-12 py-5">
+                    <div class="text-center mb-2 pb-2">
+                        <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Stay Updated</span></h2>
+                        <p>Amet lorem at rebum amet dolores. Elitr lorem dolor sed amet diam labore at justo ipsum
+                            eirmod
+                            duo labore labore.</p>
+                    </div>
+                    <form action="">
+                        <div class="input-group">
+                            <input type="text" class="form-control border-white p-4" placeholder="Email Goes Here">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary px-4">Subscribe</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Subscribe End -->
+
 </main>
 
 <script>
@@ -484,7 +295,9 @@
     document.addEventListener("DOMContentLoaded", function () {
         const searchButton = document.getElementById("search");
         const searchInput = document.getElementById("search-input");
+        const categoryButtons = document.querySelectorAll('.category-button');
         const productColumns = document.querySelectorAll('.col-lg-3');
+        let selectedCategory = 'ALL';
 
         searchButton.addEventListener("click", () => {
             const searchValue = searchInput.value.trim().toUpperCase();
@@ -493,8 +306,12 @@
                 let found = Array.from(column.querySelectorAll('.card'))
                     .some(product => {
                         let productName = product.querySelector('.product-name');
+                        let productCategory = product.querySelector('.product-category');
                         let value = productName.innerText || productName.textContent;
-                        return value.toUpperCase().includes(searchValue);
+                        let category = productCategory.getAttribute('data-category');
+
+                        
+                        return value.toUpperCase().includes(searchValue) && (category === selectedCategory || selectedCategory === 'ALL');
                     });
                 console.log("Found is : ", found);
                 column.style.display = found ? "flex" : "none";
@@ -502,20 +319,12 @@
 
             hideSectionsOnSearch();
         });
-    });
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const categoryButtons = document.querySelectorAll('.category-button');
-        const productColumns = document.querySelectorAll('.col-lg-3');
 
         categoryButtons.forEach((button) => {
             button.addEventListener("click", (event) => {
                 event.preventDefault();
-                let selectedCategory = button.getAttribute('data-category');
-
+                selectedCategory = button.getAttribute('data-category');
                 console.log("Category is: ", selectedCategory);
-
 
                 productColumns.forEach((column) => {
                     let products = column.querySelectorAll('.card');
@@ -535,21 +344,116 @@
                 hideSectionsOnSearch();
             });
         });
+
+        function hideSectionsOnSearch() {
+            hideSectionById("header-carousel");
+            hideSectionById("featured");
+            hideSectionById("offer");
+            hideSectionById("category");
+        }
+
+        function hideSectionById(id) {
+            let section = document.getElementById(id);
+            if (section) {
+                section.style.display = "none";
+            }
+        }
     });
 
+</script>
+<script>
+   
+    function showPage(pageNumber) {
+        const items = document.querySelectorAll('.pagination-item');
+        const startIndex = (pageNumber - 1) * 8;
+        const endIndex = startIndex + 8;
 
-    function hideSectionsOnSearch() {
-
-        hideSectionById("header-carousel");
-        hideSectionById("featured");
-        hideSectionById("offer");
-        hideSectionById("category");
+        items.forEach((item, index) => {
+            if (index >= startIndex && index < endIndex) {
+                item.style.display = 'table-row'; 
+            } else {
+                item.style.display = 'none';
+            }
+        });
     }
 
-    function hideSectionById(id) {
-        let section = document.getElementById(id);
-        if (section) {
-            section.style.display = "none";
-        }
+    
+    document.querySelectorAll('.pagination-link').forEach(link => {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            const pageNumber = parseInt(this.dataset.page);
+            showPage(pageNumber);
+        });
+    });
+
+    
+    showPage(1);
+
+    function applyPriceFilter(products) {
+    products = JSON.parse(products);
+    const minPrice = parseFloat(document.getElementById('minPrice').value);
+    const maxPrice = parseFloat(document.getElementById('maxPrice').value);
+
+    const filteredProducts = products.filter(product => {
+        const discountedPrice = product.price - (product.price * product.finalDiscount / 100);
+        return discountedPrice >= minPrice && discountedPrice <= maxPrice;
+    });
+
+    displayProducts(filteredProducts);
+}
+
+   
+    function displayProducts(products) {
+        const productsContainer = document.querySelector('.product');
+        productsContainer.innerHTML = '';
+
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.classList.add('col-lg-3', 'col-md-6', 'col-sm-12', 'pb-1', 'no-padding', 'pagination-item');
+
+            const cardInnerHtml = `
+            <div class="card product-item border-0 mb-4">
+                <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                    ${product.finalDiscount > 0 ? `
+                        <div class="ribbons-wrapper">
+                            <div class="ribbon">
+                                <span class="ribbon1"><span>Offer: ${product.finalDiscount}%</span></span>
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${product.images && product.images.length > 0 ? `
+                        <img class="img-fluid w-100" src="/product-images/${product.images[0]}" alt="">
+                    ` : ''}
+                </div>
+                <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
+                    <h6 class="text-truncate mb-3 product-name">${product.name}</h6>
+                    <div class="d-flex justify-content-center">
+                        ${product.finalDiscount > 0 ? `
+                            <h6 class="text-muted ml-2"><del>₹${product.price}.00</del></h6>
+                            <h6 style="margin-left: 5px;">₹${((product.price - (product.price * product.finalDiscount / 100)).toFixed(2))}</h6>
+                        ` : `
+                            <h6>₹${product.price}.00</h6>
+                        `}
+                    </div>
+                    <h6 class="text-truncate mb-3">${product.description}</h6>
+                    <h6 class="text-truncate mb-3 product-category" data-category="${product.category}" style="font-weight: 300;">
+                        Category: ${product.category}
+                    </h6>
+                </div>
+                <div class="card-footer d-flex justify-content-between bg-light border">
+                    <a href="/details/${product._id}" class="btn btn-sm text-dark p-0">
+                        <i class="fas fa-eye text-primary mr-1"></i>View Detail
+                    </a>
+                    <button class="btn btn-sm text-dark p-0" onclick="addToCart('${product._id}')">
+                        <i class="fas fa-shopping-cart text-primary mr-1"></i>Add To Cart
+                    </button>
+                </div>
+            </div>
+        `;
+
+            productCard.innerHTML = cardInnerHtml;
+            productsContainer.appendChild(productCard);
+        });
     }
+
 </script>

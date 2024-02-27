@@ -1,11 +1,11 @@
 <body>
 
     <head>
-        <!-- Other head elements -->
+        
 
-        <!-- Stylesheets -->
+        
         <link rel="stylesheet" href="/stylesheets/style.css">
-        <!-- Add other stylesheet links if needed -->
+        
     </head>
 
     <div class="container-fluid pt-5">
@@ -21,6 +21,7 @@
                             <th>Products</th>
                             <th>Price</th>
                             <th>Quantity</th>
+                            <th>Total Price</th>
                            
                         </tr>
                     </thead>
@@ -33,15 +34,17 @@
                                     <%= item.product.name %>
                                 </td>
                                 <td class="align-middle">
-                                    ₹<%= item.product.price %>/-
-                                 </td>
+                                    ₹<%= item.price %>
+                                </td>
                                 <td class="align-middle">
                                     <%= item.quantity %>
                                 </td>
-                                
+                                <td class="align-middle">
+                                    ₹<%= (item.quantity * item.price).toFixed(2) %>
+                                </td>
                             </tr>
-                        <% }) %>
-                        
+                            <% }) %>
+
                     </tbody>
                 </table >
                 <table class="table table-bordered text-center mb-0">
@@ -55,6 +58,43 @@
                         </td>
                     </tr>
                     </tbody>
+                </table>
+            </div>
+            <div class="col-lg-4 table-responsive mb-5" style="margin-left: 200px;">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Order ID:</th>
+                            <td><%= order._id %></td>
+                        </tr>
+                        <tr>
+                            <th>Delivery Details:</th>
+                            <td colspan="4">
+                                <div>
+                                    <strong>Name:</strong> <%= order.deliveryDetails.name %><br>
+                                    <strong>Street Address:</strong> <%= order.deliveryDetails.mobile %><br>
+                                    <strong>Adress:</strong> <%= order.deliveryDetails.address %><br>
+                                    <strong>Pincode:</strong> <%= order.deliveryDetails.pincode %><br>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Applied Coupon:</th>
+                            <td><%= order.
+                                appliedCoupon %></td>
+                        </tr>
+                        <tr>
+                            <th>Payment Method Used:</th>
+                            <td><%= order.
+                                paymentMethod %></td>
+                        </tr>
+                        <tr>
+                            <th>Date of Order:</th>
+                            <td><%= moment(order.date).format('MMMM Do YYYY, h:mm:ss a') %></td>
+                        </tr>
+                        <!-- Add more rows for other order details if needed -->
+                    </tbody>
+                    
                 </table>
             </div>
         </div>

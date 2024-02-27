@@ -1,0 +1,501 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<div class="content-body">
+
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-1">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Total Orders</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">
+                                <%= ordersCount %>
+                            </h2>
+
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-shopping-cart"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-2">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Net Profit</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">₹<%= totalSale %>
+                            </h2>
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-money"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6">
+                <div class="card gradient-3">
+                    <div class="card-body">
+                        <h3 class="card-title text-white">Customers</h3>
+                        <div class="d-inline-block">
+                            <h2 class="text-white">
+                                <%= userCount %>
+                            </h2>
+
+                        </div>
+                        <span class="float-right display-5 opacity-5"><i class="fa fa-users"></i></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body pb-0 d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-1">Total Category Wise Sales</h4>
+                                </div>
+                               
+                            </div>
+                            <canvas id="myChart" style="width:100%; margin-left: 10px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body pb-0 d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-1">Total Orders Monthly</h4>
+                                </div>
+
+                            </div>
+                            <canvas id="myChart2" style="width:100%; margin-left: 10px;"></canvas>
+
+                        </div>
+                        <div class="card">
+                            <div class="card-body pb-0 d-flex justify-content-between">
+                                <div>
+                                    <h4 class="mb-1">Total Orders Weekly</h4>
+                                </div>
+                                
+                            </div>
+                            <canvas id="myChart3" style="width:100%; margin-left: 10px;"></canvas>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+
+                        <div class="card">
+                            <div class="m-3">
+                                <div>
+                                    <h4 class="mb-1">Orders Each Year</h4>
+                                </div>
+                            </div>
+                            <div class="card-body pb-0 d-flex justify-content-between">
+
+                                <div class="col-4" id="yearlyChartContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+
+                        <div class="card">
+                            <div class="m-3">
+                                <div>
+                                    <h4 class="mb-1">Sales Each Year</h4>
+                                </div>
+                            </div>
+                            <div class="card-body pb-0 d-flex justify-content-between">
+
+                                <div class="col-4" id="yearlyChartTotalAMountContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="m-3">
+                                <div>
+                                    <h4 class="mb-1">Sales Report</h4>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="fromDate" class="col-sm-2 col-form-label">From Date:</label>
+                                    <div class="col-sm-4">
+                                        <input type="date" class="form-control" id="fromDate">
+                                    </div>
+                                    <label for="toDate" class="col-sm-2 col-form-label">To Date:</label>
+                                    <div class="col-sm-4">
+                                        <input type="date" class="form-control" id="toDate">
+                                    </div>
+                                </div>
+                                <button id="salesReportBtnxlsx" type="button" class="btn btn-primary mt-3">Generate Sales
+                                    Report in .xlsx Format</button>
+                                <button id="salesReportBtn" type="button" class="btn btn-primary mt-3">Generate Sales
+                                    Report in .csv Format</button>
+                                    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="m-3">
+                                <div>
+                                    <h4 class="mb-1">Orders Report</h4>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="fromDate" class="col-sm-2 col-form-label">From Date:</label>
+                                    <div class="col-sm-4">
+                                        <input type="date" class="form-control" id="fromDateOrders">
+                                    </div>
+                                    <label for="toDate" class="col-sm-2 col-form-label">To Date:</label>
+                                    <div class="col-sm-4">
+                                        <input type="date" class="form-control" id="toDateOrders">
+                                    </div>
+                                </div>
+                                <button id="ordersReportBtnxlsx" type="button" class="btn btn-primary mt-3">Generate Orders
+                                    Report in .xlsx Format</button>
+                                <button id="ordersReportBtn" type="button" class="btn btn-primary mt-3">Generate Orders
+                                    Report in .csv Format</button>
+                                 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <div class="card card-widget">
+                    <div class="card-body">
+                        <h5 class="text-muted">Order Overview </h5>
+                        <h2 class="mt-4">
+                            <%= totalSale %>
+                        </h2>
+                        <span>Total Revenue</span>
+                        <div class="mt-4">
+                            <h4>
+                                <%= onlineCount %>
+                            </h4>
+                            <h6>Online Order <span class="pull-right">
+                                    <%= onlinePercentage %>%
+                                </span></h6>
+                            <div class="progress mb-3" style="height: 7px">
+                                <div id="onlineProgressBar" class="progress-bar bg-primary" role="progressbar">
+                                    <span class="sr-only">Order</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h4>
+                                <%= codCount %>
+                            </h4>
+                            <h6 class="m-t-10 text-muted">COD Order <span class="pull-right">
+                                    <%= codPercentage %>%
+                                </span></h6>
+                            <div class="progress mb-3" style="height: 7px">
+                                <div id="codProgressBar" class="progress-bar bg-success" role="progressbar">
+                                    <span class="sr-only">Order</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="active-member">
+                            <div class="table-responsive">
+                                <table class="table table-xs mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Customers</th>
+                                            <th>Product</th>
+                                            <th>Country</th>
+                                            <th>Status</th>
+                                            <th>Payment Method</th>
+                                            <th>Activity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><img src="" class=" rounded-circle mr-3" alt="">Sarah Smith</td>
+                                            <td>iPhone X</td>
+                                            <td>
+                                                <span>United States</span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="progress" style="height: 6px">
+                                                        <div class="progress-bar bg-success" style="width: 50%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><i class="fa fa-circle-o text-success  mr-2"></i> Paid</td>
+                                            <td>
+                                                <span>Last Login</span>
+                                                <span class="m-0 pl-3">10 sec ago</span>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+    <!-- #/ container -->
+</div>
+
+
+<script>
+    let ctx1 = document.getElementById('myChart').getContext('2d');
+    let chartData = JSON.parse((`<%- JSON.stringify(chartData) %>`))
+
+    new Chart(ctx1, {
+        type: 'bar',
+        data: chartData,
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+</script>
+<script>
+    let ctx2 = document.getElementById('myChart2').getContext('2d');
+    let chartDataMonthly = JSON.parse((`<%- JSON.stringify(chartDataMonthly) %>`))
+
+    new Chart(ctx2, {
+        type: 'bar',
+        data: chartDataMonthly,
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+    let ctx3 = document.getElementById('myChart3').getContext('2d');
+    let chartDataWeekly = JSON.parse((`<%- JSON.stringify(chartDataWeekly) %>`))
+
+    new Chart(ctx3, {
+        type: 'bar',
+        data: chartDataWeekly,
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+
+    // Function to render yearly sales chart for each year
+    function renderYearlySalesChart(yearlyChartData) {
+        console.log("yearly", yearlyChartData);
+        const chartContainer = document.getElementById("yearlyChartContainer");
+
+        for (const year in yearlyChartData) {
+            const yearData = yearlyChartData[year];
+            const yearHeading = document.createElement("h5");
+            yearHeading.textContent = `Year ${year}`;
+            chartContainer.appendChild(yearHeading);
+            const canvas = document.createElement("canvas");
+            canvas.id = `yearlyChart_${year}`;
+            chartContainer.appendChild(canvas);
+
+            const ctx = canvas.getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: yearData,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+    }
+    let yearlyChartData = JSON.parse((`<%- JSON.stringify(yearlyChartData) %>`))
+    renderYearlySalesChart(yearlyChartData);
+
+    function  renderYearlySalesTotalAmountChart(yearlyChartTotalAmountData) {
+        
+        console.log("yearly", yearlyChartTotalAmountData);
+        const chartContainer = document.getElementById("yearlyChartTotalAMountContainer");
+        
+        for (const year in yearlyChartTotalAmountData) {
+            const yearData =yearlyChartTotalAmountData[year];
+            const yearHeading = document.createElement("h5");
+            yearHeading.textContent = `Year ${year}`;
+            chartContainer.appendChild(yearHeading);
+            const canvas = document.createElement("canvas");
+            canvas.id = `yearlyChart_${year}`;
+            chartContainer.appendChild(canvas);
+
+            const ctx = canvas.getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: yearData,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+    }
+    let yearlyChartTotalAmountData = JSON.parse((`<%- JSON.stringify(chartDataYearlyTotalAmount) %>`))
+    renderYearlySalesTotalAmountChart(yearlyChartTotalAmountData);
+
+</script>
+<script>
+    
+    window.onload = function () {
+        
+        const ordersCount = JSON.parse((`<%- JSON.stringify(ordersCount) %>`))
+
+      
+        const onlineCount = JSON.parse((`<%- JSON.stringify(onlineCount) %>`))
+        const codCount = JSON.parse((`<%- JSON.stringify(codCount) %>`))
+
+        
+        const onlinePercentage2 = (onlineCount / ordersCount) * 100;
+        const codPercentage2 = (codCount / ordersCount) * 100;
+
+        
+        document.getElementById('onlineProgressBar').style.width = onlinePercentage2 + '%';
+        document.getElementById('codProgressBar').style.width = codPercentage2 + '%';
+    };
+</script>
+<script>
+    $(document).ready(function () {
+        $("#salesReportBtn").click(function () {
+            
+            const fromDate = $("#fromDate").val();
+            const toDate = $("#toDate").val();
+
+            
+            let url = "/admin/sales-report";
+            if (fromDate && toDate) {
+                url += `?fromDate=${fromDate}&toDate=${toDate}`;
+            }
+
+            
+            window.location.href = url;
+        });
+    });
+    $(document).ready(function () {
+        $("#salesReportBtnxlsx").click(function () {
+            
+            const fromDate = $("#fromDate").val();
+            const toDate = $("#toDate").val();
+
+          
+            let url = "/admin/sales-reportxlsx";
+            if (fromDate && toDate) {
+                url += `?fromDate=${fromDate}&toDate=${toDate}`;
+            }
+
+            window.location.href = url;
+        });
+    });
+    $(document).ready(function () {
+        $("#ordersReportBtn").click(function () {
+            
+            const fromDate = $("#fromDateOrders").val();
+            const toDate = $("#toDateOrders").val();
+
+            
+            let url = "/admin/orders-report";
+            if (fromDate && toDate) {
+                url += `?fromDate=${fromDate}&toDate=${toDate}`;
+            }
+
+            window.location.href = url;
+        });
+    });
+
+    $(document).ready(function () {
+        $("#ordersReportBtnxlsx").click(function () {
+            
+            const fromDate = $("#fromDateOrders").val();
+            const toDate = $("#toDateOrders").val();
+
+            
+            let url = "/admin/orders-reportxlsx";
+            if (fromDate && toDate) {
+                url += `?fromDate=${fromDate}&toDate=${toDate}`;
+            }
+
+            
+            window.location.href = url;
+        });
+    });
+</script>

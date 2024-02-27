@@ -1,3 +1,5 @@
+<!-- user/profile.ejs -->
+
 <div class="container-fluid pt-5">
     <div class="row px-xl-5">
         <div class="col-lg-12">
@@ -6,29 +8,33 @@
                     <div class="col-md-6 form-group">
                         <label>Name</label>
                         <input class="form-control" type="text" placeholder="" name="fname"
-                            value="<%= userDetails.name %>" readonly>
+                            value="<%= userDetails.name || '' %>" readonly>
                     </div>
                     <div class="col-md-6 form-group">
                         <label>E-mail</label>
                         <input class="form-control" type="text" placeholder="example@email.com" name="email"
-                            value="<%= userDetails.email %>" readonly>
+                            value="<%= userDetails.email || '' %>" readonly>
                     </div>
                     <div class="col-md-6 form-group">
                         <label>Mobile No</label>
                         <input class="form-control" type="text" placeholder="+123 456 789" name="mobile"
-                            value="<%= userDetails.mobile %>" readonly>
+                            value="<%= userDetails.mobile || '' %>" readonly>
                     </div>
-                    <div class="col-md-6 form-group">
-                        <label>Address</label>
-                        <input class="form-control" type="text" placeholder="123 Street" name="address"
-                            value="<%= userDetails.address %>" readonly>
-                    </div>
+                    <% if (userDetails.addresses) { %>
+                        <% userDetails.addresses.forEach((address, index) => { %>
+                            <div class="col-md-6 form-group">
+                                <label>Address <%= index + 1 %></label>
+                                <input class="form-control" type="text" placeholder="123 Street" name="address<%= index + 1 %>"
+                                    value="<%= address %>" readonly>
+                            </div>
+                        <% }); %>
+                    <% } %>
                     <div class="col-md-6 form-group">
                         <label>Referal Code</label>
                         <div class="input-group">
-                            <input class="form-control" type="text" placeholder="" name="referal" value="<%= userDetails.referalCode %>" readonly>
+                            <input class="form-control" type="text" placeholder="" name="referal"
+                                value="<%= userDetails.referalCode || '' %>" readonly>
                             <div class="input-group-append">
-                                
                                 <button class="btn btn-secondary" type="button" id="copyReferalCode">Copy</button>
                             </div>
                         </div>
@@ -36,10 +42,8 @@
                     <div class="col-md-6 form-group">
                         <label>Pincode</label>
                         <input class="form-control" type="text" placeholder="123 Street" name="pincode"
-                            value="<%= userDetails.pincode %>" readonly>
+                            value="<%= userDetails.pincode || '' %>" readonly>
                     </div>
-
-
                 </div>
                 <a href="/edit-profile/<%= userDetails._id %>"><button class="btn-primary">Edit Profile</button></a>
             </div>
@@ -48,19 +52,11 @@
 </div>
 
 <script>
-    
     document.getElementById('copyReferalCode').addEventListener('click', function() {
-    
         var referalInput = document.getElementsByName('referal')[0];
-
-        
         referalInput.select();
         referalInput.setSelectionRange(0, 99999); 
-
-        
         document.execCommand('copy');
-        
-        
         referalInput.blur();
     });
 </script>
