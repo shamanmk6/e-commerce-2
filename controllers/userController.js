@@ -129,9 +129,9 @@ const signupUser = async (req, res, next) => {
 
 const registerUser = async (req, res, next) => {
   try {
-    console.log("registering user is:" ,req.body);
+    console.log("registering user is:", req.body);
     const result = await userHelpers.doSignup(req.body);
-      
+
     if (result.status === "error") {
       res.render("user/signup-user", { errorMessage: result.message });
     } else {
@@ -241,7 +241,7 @@ const getProfile = async (req, res) => {
     const categories = await productHelpers.getAllCategories();
     let userDetails = await userHelpers.getUserDetails(req.session.user._id);
     let cartCount = await userHelpers.getCartCount(user._id);
-    res.render("user/profile", { user, userDetails, categories,cartCount });
+    res.render("user/profile", { user, userDetails, categories, cartCount });
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal Server Error");
@@ -256,7 +256,12 @@ const editProfile = async (req, res) => {
     console.log(req.params.id);
     let userDetails = await userHelpers.getUserDetails(req.params.id);
     console.log(userDetails);
-    res.render("user/edit-profile", { user, userDetails, categories,cartCount });
+    res.render("user/edit-profile", {
+      user,
+      userDetails,
+      categories,
+      cartCount,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal Server Error");
@@ -309,12 +314,12 @@ const verifyOTP = async (req, res) => {
       res.redirect("/login");
     } else if (verificationResult.status === false) {
       console.log("wrong otp");
-      console.log("wrong userID is: ",userId);
-      console.log("result: ",verificationResult.message);
-      let errorMessage=verificationResult.message
+      console.log("wrong userID is: ", userId);
+      console.log("result: ", verificationResult.message);
+      let errorMessage = verificationResult.message;
       res.render("user/enter-otp", {
         userId,
-        errorMessage
+        errorMessage,
       });
     } else {
       throw new Error("Unexpected verification result");
@@ -353,7 +358,10 @@ const resendOTP = async (req, res) => {
       .getDatabase()
       .collection(collection.USER_COLLECTION)
       .findOne({ _id: new ObjectId(userId) });
-
+    await db
+      .getDatabase()
+      .collection(collection.OTP_CollECTION)
+      .deleteOne({ userId: userId });
     if (user) {
       await sendVerifyEmail(user.name, user.email, userId, res);
     } else {
@@ -371,9 +379,12 @@ const resendOTPForgot = async (req, res) => {
       .getDatabase()
       .collection(collection.USER_COLLECTION)
       .findOne({ _id: new ObjectId(userId) });
-
+    await db
+      .getDatabase()
+      .collection(collection.OTP_CollECTION)
+      .deleteOne({ userId: userId });
     if (user) {
-      await sendVerifyEmail(user.name, user.email, userId, res);
+      await sendResetEmail(user,res);
     } else {
       res.status(404).send("User not found.");
     }

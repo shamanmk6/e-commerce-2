@@ -7,7 +7,7 @@
             padding: 0;
             height: 100vh;
             background: #fafafa;
-            /* fallback for old browsers */
+            
         }
 
         .container {
@@ -21,14 +21,14 @@
         .userInput {
             display: flex;
             justify-content: center;
-            /* Center the input boxes horizontally */
+            
             margin-top: 15px;
-            /* Add margin for spacing */
+            
         }
 
         input {
             margin: 0 10px;
-            /* Add margin between input boxes */
+           
             height: 35px;
             width: 65px;
             border-color: rgb(67, 67, 67);
@@ -54,7 +54,7 @@
             width: 150px;
             height: 40px;
             margin-top: 0px;
-            /* Adjust the margin for spacing */
+            
             font-family: arimo;
             font-size: 1.1rem;
             border: none;
@@ -62,15 +62,15 @@
             letter-spacing: 2px;
             cursor: pointer;
             background: #ffd4d4;
-            /* fallback for old browsers */
+            
             background: -webkit-linear-gradient(to right,
                     #ffdbdb,
                     #ffe0e0);
-            /* Chrome 10-25, Safari 5.1-6 */
+           
             background: linear-gradient(to right,
                     #f8d5d5,
                     #ffe6e6);
-            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+            
         }
     </style>
 </head>
@@ -135,12 +135,17 @@
 
         var countdown = 60;
         var countdownElement = document.getElementById('countdown');
-
+        var inputFields = document.querySelectorAll('.userInput input[type="text"]');
+        var confirmButton = document.querySelector('.userInput button');
         function updateCountdown() {
             countdownElement.innerHTML = countdown + ' seconds';
             if (countdown === 0) {
                 countdownElement.innerHTML = 'OTP Expired';
                 countdownElement.style.color = 'red';
+                inputFields.forEach(function (input) {
+                    input.readOnly = true;
+                });
+                confirmButton.disabled = true;
             } else {
                 countdown--;
                 setTimeout(updateCountdown, 1000);
@@ -149,6 +154,6 @@
 
 
         updateCountdown();
-        
+
     </script>
 </body>

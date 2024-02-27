@@ -113,7 +113,7 @@ router.get("/resend-otp", async (req, res) =>
   resendOTP(req, res, "/enter-otp")
 );
 router.get("/resend-otp-forgot", async (req, res) =>
-  resendOTP(req, res, "/enter-otp-forgot")
+  resendOTPForgot(req, res, "/enter-otp-forgot")
 );
 
 router.post("/verify-payment",verifyPayment)
