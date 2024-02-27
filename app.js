@@ -98,7 +98,7 @@ app.use(async function (err, req, res, next) {
   res.render("error", { error: res.locals.error, categories });
 });
 
-const PORT = 3001;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running at ${PORT} successfully`);
 });

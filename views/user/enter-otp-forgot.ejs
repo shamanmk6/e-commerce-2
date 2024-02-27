@@ -54,23 +54,23 @@
             width: 150px;
             height: 40px;
             margin-top: 0px;
-            /* Adjust the margin for spacing */
+            
             font-family: arimo;
             font-size: 1.1rem;
             border: none;
             border-radius: 5px;
             letter-spacing: 2px;
             cursor: pointer;
-            background: #616161;
-            /* fallback for old browsers */
+            background: #ffd4d4;
+            
             background: -webkit-linear-gradient(to right,
-                    #565656,
-                    #616161);
-            /* Chrome 10-25, Safari 5.1-6 */
+                    #ffdbdb,
+                    #ffe0e0);
+            
             background: linear-gradient(to right,
-                    #9bc5c3,
-                    #616161);
-            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                    #f8d5d5,
+                    #ffe6e6);
+            
         }
     </style>
 </head>
@@ -101,27 +101,60 @@
                     </div>
 
                 </form>
-                <a href="/resend-otp-forgot?userId=<%= userId %>">
-                    <h3>Resend OTP</h3>
-                </a>
+                <div id="resendContainer">
+                    <span id="countdown" style="margin-left: 10px;"></span>
+                    <a href="/resend-otp-forgot?userId=<%= userId %>">
+                        <h3>Resend OTP</h3>
+                    </a>
+                </div>
     </div>
 
     <script>
-        function moveToNext(current) {
-            if (current.value.length === current.maxLength) {
-                var nextElement = current.nextElementSibling;
-                if (nextElement && nextElement.tagName === "INPUT") {
-                    nextElement.focus();
-                }
+        console.log("hello");
+        function moveToNext(input) {
+            var maxLength = parseInt(input.getAttribute("maxlength"));
+            var currentIndex = Array.from(input.parentNode.children).indexOf(input);
+
+            if (currentIndex < maxLength - 1) {
+                var nextInput = input.parentNode.children[currentIndex + 1];
+                nextInput.focus();
             }
+
+            updateHiddenOTP();
+        }
+
+        function updateHiddenOTP() {
+            var otpFields = document.querySelectorAll('.userInput input[type="text"]');
+            var concatenatedOTP = Array.from(otpFields).map(field => field.value).join('');
+            document.getElementById('otp').value = concatenatedOTP;
         }
 
         function prepareConcatenatedOTP() {
-            var otp = "";
-            for (let i = 1; i <= 6; i++) {
-                otp += document.getElementById("digit" + i).value;
-            }
-            document.getElementById("otp").value = otp;
+
+            return true;
         }
+
+        var countdown = 60;
+        var countdownElement = document.getElementById('countdown');
+        var inputFields = document.querySelectorAll('.userInput input[type="text"]');
+        var confirmButton = document.querySelector('.userInput button');
+        function updateCountdown() {
+            countdownElement.innerHTML = countdown + ' seconds';
+            if (countdown === 0) {
+                countdownElement.innerHTML = 'OTP Expired';
+                countdownElement.style.color = 'red';
+                inputFields.forEach(function (input) {
+                    input.readOnly = true;
+                });
+                confirmButton.disabled = true;
+            } else {
+                countdown--;
+                setTimeout(updateCountdown, 1000);
+            }
+        }
+
+
+        updateCountdown();
+
     </script>
 </body>

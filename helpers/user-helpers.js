@@ -60,15 +60,15 @@ module.exports = {
             status: "error",
             message: "User with this email already exists",
           });
-          return; // Exit early if user already exists
+          return; 
         }
 
         if (password !== confirmPwd) {
           resolve({ status: "error", message: "Password Not Matching" });
-          return; // Exit early if passwords don't match
+          return; 
         }
 
-        // Insert user
+        
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const newUser = new User({
@@ -77,6 +77,7 @@ module.exports = {
           password: hashedPassword,
           isVerified: 0,
           referalCode: generateReferralCode(),
+          addresses:"",
         });
         const insertedUserData = await db
           .getDatabase()
@@ -84,7 +85,7 @@ module.exports = {
           .insertOne(newUser);
         const userId = insertedUserData.insertedId;
 
-        // Insert wallet entry
+        
         await db
           .getDatabase()
           .collection(collection.WALLET_COLLECTION)
