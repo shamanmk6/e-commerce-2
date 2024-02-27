@@ -309,17 +309,18 @@ const verifyOTP = async (req, res) => {
     const userId = req.body.userId;
     console.log("otp is: " + otp);
     console.log("userId is: " + userId);
-    console.log("verify otp clicked");
     const verificationResult = await userHelpers.otpVerify(otp, userId);
-    console.log("after verify otp clicked");
     if (verificationResult.status === true) {
-      res.json({ status: true, redirectUrl: "/login" });
+      res.redirect("/login");
     } else if (verificationResult.status === false) {
       console.log("wrong otp");
       console.log("wrong userID is: ", userId);
       console.log("result: ", verificationResult.message);
       let errorMessage = verificationResult.message;
-      res.json({ status: false, message: errorMessage });
+      res.render("user/enter-otp", {
+        userId,
+        errorMessage,
+      });
     } else {
       throw new Error("Unexpected verification result");
     }
@@ -337,11 +338,12 @@ const verifyOTPForgot = async (req, res) => {
     console.log("userId is: " + userId);
     const verificationResult = await userHelpers.otpVerify(otp, userId);
     if (verificationResult.status) {
-      res.json({ status: true, redirectUrl: `/resetPassword?userId=${userId}` });
-      // res.redirect(`/resetPassword?userId=${userId}`);
+      res.redirect(`/resetPassword?userId=${userId}`);
     } else {
-      let errorMessage = verificationResult.message;
-      res.json({ status: false, message: errorMessage });
+      res.render("user/enter-otp-forgot", {
+        userId,
+        errorMessage: verificationResult.message,
+      });
     }
   } catch (error) {
     console.error(error);
