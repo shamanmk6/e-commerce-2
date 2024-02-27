@@ -7,7 +7,7 @@
             padding: 0;
             height: 100vh;
             background: #fafafa;
-            
+
         }
 
         .container {
@@ -21,14 +21,14 @@
         .userInput {
             display: flex;
             justify-content: center;
-            
+
             margin-top: 15px;
-            
+
         }
 
         input {
             margin: 0 10px;
-           
+
             height: 35px;
             width: 65px;
             border-color: rgb(67, 67, 67);
@@ -54,7 +54,7 @@
             width: 150px;
             height: 40px;
             margin-top: 0px;
-            
+
             font-family: arimo;
             font-size: 1.1rem;
             border: none;
@@ -62,15 +62,15 @@
             letter-spacing: 2px;
             cursor: pointer;
             background: #ffd4d4;
-            
+
             background: -webkit-linear-gradient(to right,
                     #ffdbdb,
                     #ffe0e0);
-           
+
             background: linear-gradient(to right,
                     #f8d5d5,
                     #ffe6e6);
-            
+
         }
     </style>
 </head>
@@ -80,32 +80,29 @@
 <body>
     <div class="container">
         <h1>ENTER OTP</h1>
-        <% if (typeof errorMessage !=='undefined' ) { %>
-            <p style="color: red;">
-                <%= errorMessage %>
-            </p>
-            <% } %>
+        <p id="errorMessage" style="color: red;"></p>
 
-                <form action="/verify-otp" method="post" onsubmit="return prepareConcatenatedOTP()">
-                    <div class="userInput">
-                        <input type="text" name="digit1" id="digit1" maxlength="1" oninput="moveToNext(this)">
-                        <input type="text" name="digit2" id="digit2" maxlength="1" oninput="moveToNext(this)">
-                        <input type="text" name="digit3" id="digit3" maxlength="1" oninput="moveToNext(this)">
-                        <input type="text" name="digit4" id="digit4" maxlength="1" oninput="moveToNext(this)">
-                        <input type="text" name="digit5" id="digit5" maxlength="1" oninput="moveToNext(this)">
-                        <input type="text" name="digit6" id="digit6" maxlength="1" oninput="moveToNext(this)">
-                        <input type="hidden" name="otp" id="otp">
-                        <input type="hidden" name="userId" value="<%= userId %>">
-                        <button type="submit">CONFIRM</button>
-                    </div>
-                </form>
 
-                <div id="resendContainer">
-                    <span id="countdown" style="margin-left: 10px;"></span>
-                    <a href="/resend-otp?userId=<%= userId %>" id="resendLink">
-                        <h3>Resend OTP</h3>
-                    </a>
-                </div>
+        <form id="otpForm">
+            <div class="userInput">
+                <input type="text" name="digit1" id="digit1" maxlength="1" oninput="moveToNext(this)">
+                <input type="text" name="digit2" id="digit2" maxlength="1" oninput="moveToNext(this)">
+                <input type="text" name="digit3" id="digit3" maxlength="1" oninput="moveToNext(this)">
+                <input type="text" name="digit4" id="digit4" maxlength="1" oninput="moveToNext(this)">
+                <input type="text" name="digit5" id="digit5" maxlength="1" oninput="moveToNext(this)">
+                <input type="text" name="digit6" id="digit6" maxlength="1" oninput="moveToNext(this)">
+                <input type="hidden" name="otp" id="otp">
+                <input type="hidden" name="userId" value="<%= userId %>">
+                <button type="submit">CONFIRM</button>
+            </div>
+        </form>
+
+        <div id="resendContainer">
+            <span id="countdown" style="margin-left: 10px;"></span>
+            <a href="/resend-otp?userId=<%= userId %>" id="resendLink">
+                <h3>Resend OTP</h3>
+            </a>
+        </div>
     </div>
 
     <script>
@@ -154,6 +151,36 @@
 
 
         updateCountdown();
+        $(document).ready(function () {
+            $('#otpForm').submit(function (e) {
+                e.preventDefault(); 
+
+                var formData = $(this).serialize(); 
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/verify-otp',
+                    data: formData,
+                    success: function (response) {
+                        console.log('Response:', response);
+                        
+                        if (response.status === true) {
+                           
+                            window.location.href = response.redirectUrl;
+                        } else {
+                           
+                            console.log('Verification failed:', response.message);
+                            $('#errorMessage').text(response.message);
+                            
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
 
     </script>
 </body>
