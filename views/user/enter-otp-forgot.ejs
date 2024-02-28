@@ -80,14 +80,10 @@
 <body>
     <div class="container">
         <h1>ENTER OTP</h1>
-        <% if (typeof errorMessage !=='undefined' ) { %>
-            <p style="color: red;">
-                <%= errorMessage %>
-            </p>
-            <% } %>
+        <p id="errorMessage" style="color: red;"></p>
 
 
-                <form action="/verify-otp-forgot" method="post" onsubmit="prepareConcatenatedOTP()">
+                <form id="otpForm">
                     <div class="userInput">
                         <input type="text" name="digit1" id="digit1" oninput="moveToNext(this)">
                         <input type="text" name="digit2" id="digit2" oninput="moveToNext(this)">
@@ -155,6 +151,36 @@
 
 
         updateCountdown();
+        $(document).ready(function () {
+            $('#otpForm').submit(function (e) {
+                e.preventDefault(); 
+
+                var formData = $(this).serialize(); 
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/verify-otp-forgot',
+                    data: formData,
+                    success: function (response) {
+                        console.log('Response:', response);
+                        
+                        if (response.status === true) {
+                           
+                            window.location.href = response.redirectUrl;
+                        } else {
+                           
+                            console.log('Verification failed:', response.message);
+                            $('#errorMessage').text(response.message);
+                            
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
 
     </script>
 </body>
