@@ -318,7 +318,7 @@ const verifyOTP = async (req, res) => {
       console.log("wrong userID is: ", userId);
       console.log("result: ", verificationResult.message);
       let errorMessage = verificationResult.message;
-      res.json({status:false,errorMessage})
+      res.json({status:false,message:errorMessage})
     } else {
       throw new Error("Unexpected verification result");
     }
@@ -339,7 +339,7 @@ const verifyOTPForgot = async (req, res) => {
       res.json({status:true,redirectUrl:`/resetPassword?userId=${userId}`})
     } else {
       let errorMessage = verificationResult.message;
-      res.json({status:false,errorMessage})
+      res.json({status:false,message:errorMessage})
     }
   } catch (error) {
     console.error(error);
