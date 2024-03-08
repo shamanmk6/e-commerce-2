@@ -95,11 +95,12 @@ const getOrders = async (req, res) => {
     const categories = await productHelpers.getAllCategories();
     req.session.authorized = true;
     const isAuthorized = req.session.authorized;
+    
     // let total = await userHelpers.totalAmount(req.session.user._id);
     let userDetails = await userHelpers.getUserDetails(req.session.user._id);
     console.log("userDetails",userDetails);
     let cartCount = await userHelpers.getCartCount(req.session.user._id);
-    res.render("user/order", { total, user, isAuthorized, userDetails,categories,cartCount  });
+    res.render("user/order", { total, user, isAuthorized, userDetails,categories,cartCount });
     } catch (error) {
       console.log(error);
       res.status(500).send("Internal Server Error");

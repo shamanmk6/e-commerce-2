@@ -56,6 +56,7 @@ const applyCoupon = async (req, res) => {
     req.session.appliedCoupon = {
       code: req.body.couponcode,
     };
+    let couponName = req.body.couponcode || "";
     const appliedCoupon = {
       code: req.body.couponcode,
     };
@@ -63,16 +64,17 @@ const applyCoupon = async (req, res) => {
       throw new Error(validCouponResponse.message || "Invalid Coupon");
     }
 
-    let total = req.body.total
-    console.log("Total @ apply coupon is: ",total);
+    let total = req.body.total;
+    req.session.total = total; // Update the session's total value
+    console.log("Total @ apply coupon is: ", total);
+    console.log("coupon document", appliedCoupon);
+    couponName = req.body.couponcode; // Set couponName if a valid coupon is applied
+    const discountValue = parseFloat(
+      validCouponResponse.couponDocument.discount
+    );
     if (validCouponResponse.couponDocument.discount) {
-      const discountValue = parseFloat(
-        validCouponResponse.couponDocument.discount
-      );
       if (!isNaN(discountValue)) {
-        total = total-((discountValue / 100) * total)
-
-        // await userHelpers.updateCartTotal(req.session.user._id, totalValue);
+        total = total - (discountValue / 100) * total;
       } else {
         console.error(
           "Invalid discount value:",
@@ -82,33 +84,46 @@ const applyCoupon = async (req, res) => {
     }
     let userDetails = await userHelpers.getUserDetails(req.session.user._id);
     let cartCount = await userHelpers.getCartCount(req.session.user._id);
-    // let total = await userHelpers.totalAmount(req.session.user._id);
-    console.log("After apply coupon total: ",total);
+    console.log("After apply coupon total: ", total);
     res.render("user/order", {
       user,
       total,
       cartCount,
       userDetails,
       appliedCoupon,
+      couponName,
+      discountValue,
     });
   } catch (error) {
-    const user = req.session.user;
     console.error("Error applying coupon:", error.message);
+    const user = req.session.user;
     const errorMessage = error.message || "Invalid Coupon. Please try again.";
-    let total =
-      req.session.discountedTotal ||
-      req.body.total;
+    let total = req.session.total || req.body.total;
     let userDetails = await userHelpers.getUserDetails(req.session.user._id);
     let cartCount = await userHelpers.getCartCount(req.session.user._id);
-
-    // let total = await userHelpers.totalAmount(req.session.user._id);
     res.render("user/order", {
       user,
       cartCount,
       total,
       errorMessage,
       userDetails,
+      couponName,
+      discountValue,
     });
+  }
+};
+const removeCoupon = async (req, res) => {
+  try {
+    console.log("removing coupon is: ", req.body.couponName);
+    console.log("previous total is: ", req.session.total);
+    const previousTotal = req.session.total || req.body.total;
+    delete req.session.appliedCoupon;
+    req.session.total = previousTotal;
+    console.log("remove coupon total is: ",req.session.total);
+    res.json({ total: previousTotal });
+  } catch (error) {
+    console.error("Error removing coupon:", error.message);
+    res.status(500).json({ error: "Error removing coupon" });
   }
 };
 
@@ -152,4 +167,5 @@ module.exports = {
   applyCoupon,
   editCoupon,
   updateCoupon,
+  removeCoupon,
 };
