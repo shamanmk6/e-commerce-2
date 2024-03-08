@@ -33,6 +33,7 @@ const {
 } = require("../controllers/productController.js");
 const{
   applyCoupon,
+  removeCoupon,
 }=require('../controllers/couponController.js');
 const{
   cancelOrder,
@@ -119,9 +120,11 @@ router.get("/resend-otp-forgot", async (req, res) =>
 router.post("/verify-payment",verifyPayment)
 
 router.post("/apply-coupon",verifyLogin,applyCoupon)
+router.post("/remove-coupon",verifyLogin,removeCoupon)
 
 router.post("/cancel-order/:id",verifyLogin,cancelRequest);
 router.post("/return-order/:id",verifyLogin,returnRequest);
 
 router.get("/wallet",verifyLogin,getWallet)
+
 module.exports = router;

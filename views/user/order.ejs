@@ -50,20 +50,22 @@
                             </div>
                             <div class="col-md-6 form-group">
                                 <label>Address</label>
-                                <% if (userDetails.addresses && userDetails.addresses.length > 0) { %>
+                                <% if (userDetails.addresses && userDetails.addresses.length> 0) { %>
                                     <% userDetails.addresses.forEach(function(address, index) { %>
                                         <div class="custom-control custom-radio">
-                                            <input type="radio" class="custom-control-input" name="selectedAddress" id="address_<%= index %>" value="<%= index %>" <%= index === 0 ? 'checked' : '' %>>
+                                            <input type="radio" class="custom-control-input" name="selectedAddress"
+                                                id="address_<%= index %>" value="<%= index %>" <%=index===0 ? 'checked'
+                                                : '' %>>
                                             <label class="custom-control-label" for="address_<%= index %>">
                                                 <%= address %>
                                             </label>
                                         </div>
-                                    <% }); %>
-                                <% } else { %>
-                                    <p>No addresses found.</p>
-                                <% } %>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <p>No addresses found.</p>
+                                                <% } %>
                             </div>
-                            
+
                             <div class="col-md-6 form-group">
                                 <label>Pincode</label>
                                 <input class="form-control" type="text" placeholder="123 Street" name="pincode"
@@ -108,13 +110,36 @@
                     <div class="card-header bg-secondary border-0">
                         <h4 class="font-weight-semi-bold m-0">Order Total</h4>
                     </div>
-                    <div class="card-footer border-secondary bg-transparent">
-                        <div class="d-flex justify-content-between mt-2">
-                            <h5 class="font-weight-bold">Total</h5>
-                            <h5 class="font-weight-bold">₹<%= total %></h5>
+
+                    <% if (typeof couponName !=='undefined' && couponName && typeof discountValue !=='undefined' &&
+                        discountValue) { %>
+                        <div id="appliedCouponDiv" class="card-footer border-secondary bg-transparent">
+                            <div class="d-flex justify-content-between mt-2">
+                                <h5 class="font-weight-light">Applied Coupon Is:</h5>
+                                <h5 class="font-weight-light">
+                                    <%= couponName %>
+                                </h5>
+                                <h5 class="font-weight-light">
+                                    <%= discountValue %>%
+                                </h5>
+                                <button type="button" class="btn btn-primary"
+                                    onclick="removeCoupon('<%= couponName %>')">-</button>
+
+                            </div>
                         </div>
-                    </div>
+                        <% } %>
+
+
+
+                        <div class="card-footer border-secondary bg-transparent">
+                            <div class="d-flex justify-content-between mt-2">
+                                <h5 class="font-weight-bold">Total</h5>
+                                <h5 class="font-weight-bold total">₹<%= total %></h5>
+                            </div>
+                        </div>
+                        
                 </div>
+
                 <div class="card border-secondary mb-5">
                     <div class="card-header bg-secondary border-0">
                         <h4 class="font-weight-semi-bold m-0">Payment</h4>
@@ -128,11 +153,12 @@
                         </div>
                         <div class="form-group">
                             <div class="custom-control custom-radio">
-                                <input type="radio" class="custom-control-input" name="payment" id="directcheck" value="ONLINE">
+                                <input type="radio" class="custom-control-input" name="payment" id="directcheck"
+                                    value="ONLINE">
                                 <label class="custom-control-label" for="directcheck">Online Payment</label>
                             </div>
                         </div>
-                        
+
                     </div>
                     <div class="card-footer border-secondary bg-transparent">
                         <button class="btn btn-lg btn-block btn-primary font-weight-bold my-3 py-3">Place Order</button>
@@ -159,7 +185,7 @@
                 <div class="alert alert-danger mt-3">
                     <%= errorMessage %>
                 </div>
-            <% } %>
+                <% } %>
         </div>
     </div>
 </div>
@@ -174,42 +200,39 @@
         });
     });
 </script>
-   
+
 <script>
-  $("#checkout-form").submit((e) => {
+    $("#checkout-form").submit((e) => {
     e.preventDefault();
-    let total = JSON.parse((`<%- JSON.stringify(total) %>`))
-   
+    // Get the total value from the hidden input field
+    let total = $('input[name="total"]').val();
+
     var selectedAddressGroup = $('input[name="addressGroup"]:checked').val();
 
-    
     var formData = 'selectedAddressGroup=' + selectedAddressGroup;
-    var userDetails = JSON.parse((`<%- JSON.stringify(userDetails) %>`))
+    var userDetails = JSON.parse((`<%- JSON.stringify(userDetails) %>`));
     if (selectedAddressGroup === 'address1') {
         var selectedAddressIndex = $('input[name="selectedAddress"]:checked').val();
         var selectedAddress = userDetails.addresses[selectedAddressIndex];
-        console.log("selected adress is ",selectedAddress);
+        console.log("selected address is ", selectedAddress);
         formData += '&' +
             'name=' + $('#address1Fields input[name="name"]').val() +
             '&email=' + $('#address1Fields input[name="email"]').val() +
             '&mobile=' + $('#address1Fields input[name="mobile"]').val() +
             '&address=' + selectedAddress +
-            '&pincode=' + $('#address1Fields input[name="pincode"]').val()+
+            '&pincode=' + $('#address1Fields input[name="pincode"]').val() +
             '&userId=' + $('#address1Fields input[name="userId"]').val();
-            
     } else if (selectedAddressGroup === 'address2') {
         formData += '&' +
             'name=' + $('#address2Fields input[name="name"]').val() +
             '&email=' + $('#address2Fields input[name="email"]').val() +
             '&mobile=' + $('#address2Fields input[name="mobile"]').val() +
             '&address=' + $('#address2Fields input[name="address"]').val() +
-            '&pincode=' + $('#address2Fields input[name="pincode"]').val()+
+            '&pincode=' + $('#address2Fields input[name="pincode"]').val() +
             '&userId=' + $('#address2Fields input[name="userId"]').val();
-            
-
     }
     formData += '&' + 'payment=' + $('input[name="payment"]:checked').val();
-    formData += '&'+'total=' + total;
+    formData += '&' + 'total=' + total;
     $.ajax({
         url: '/place-order',
         method: 'post',
@@ -217,57 +240,92 @@
         success: (response) => {
             if (response.codSuccess) {
                 location.href = '/order-success?orderId=' + response.orderId;
-            }else{
-                razorpayPayment(response)
+            } else {
+                razorpayPayment(response);
             }
         }
     });
 });
 
-function razorpayPayment(order){
-    var options = {
-    "key": "rzp_test_pwhvE482E5y8F4", 
-    "amount": order.amount, 
-    "currency": "INR",
-    "name": "E-Shopper",
-    "description": "Test Transaction",
-    "image": "https://example.com/your_logo",
-    "order_id": order.id, 
-    "handler": function (response){
-        verifyPayment(response,order)
-    },
-    "prefill": {
-        "name": "Shaman",
-        "email": "gaurav.kumar@example.com",
-        "contact": "9000090000"
-    },
-    "notes": {
-        "address": "Razorpay Corporate Office"
-    },
-    "theme": {
-        "color": "#ed9b9b"
+
+    function razorpayPayment(order) {
+        var options = {
+            "key": "rzp_test_pwhvE482E5y8F4",
+            "amount": order.amount,
+            "currency": "INR",
+            "name": "E-Shopper",
+            "description": "Test Transaction",
+            "image": "https://example.com/your_logo",
+            "order_id": order.id,
+            "handler": function (response) {
+                verifyPayment(response, order)
+            },
+            "prefill": {
+                "name": "Shaman",
+                "email": "gaurav.kumar@example.com",
+                "contact": "9000090000"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#ed9b9b"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
     }
-};
-var rzp1 = new Razorpay(options);
-rzp1.open();
-}
-function verifyPayment(payment,order){
-   $.ajax({
-    url:'/verify-payment',
-    data:{
-        payment,
-        order
-    },
-    method:"post",
-    success:(response)=>{
-        if(response.status){
-            location.href = '/order-success?orderId=' + response.orderId;
-        }else{
-            alert('Payment Failed')
+    function verifyPayment(payment, order) {
+        $.ajax({
+            url: '/verify-payment',
+            data: {
+                payment,
+                order
+            },
+            method: "post",
+            success: (response) => {
+                if (response.status) {
+                    location.href = '/order-success?orderId=' + response.orderId;
+                } else {
+                    alert('Payment Failed')
+                }
+            }
+        })
+    }
+
+    function removeCoupon(couponName) {
+    console.log("function remove coupon called");
+    console.log(couponName);
+    $.ajax({
+        url: '/remove-coupon',
+        method: 'post',
+        data: { couponName: couponName },
+        success: (response) => {
+            console.log("previous total is: ", response.total);
+            // Update the total value on the UI
+            var totalElement = document.querySelector('.font-weight-bold.total');
+            if (totalElement) {
+                totalElement.innerText = '₹' + response.total;
+            }
+
+            var hiddenTotalInput = document.querySelector('input[name="total"]');
+            if (hiddenTotalInput) {
+                hiddenTotalInput.value = response.total;
+            }
+            // Hide the applied coupon div
+            var appliedCouponDiv = document.getElementById('appliedCouponDiv');
+            if (appliedCouponDiv) {
+                appliedCouponDiv.style.display = 'none';
+            }
+        },
+        error: (xhr, status, error) => {
+            console.error('Error removing coupon:', error);
         }
-    }
-   })
+    });
 }
+
+
+
 
 
 
